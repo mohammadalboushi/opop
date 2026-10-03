@@ -1,0 +1,24 @@
+{
+  "name": "خزنة أسراري - إدارة كلمات المرور",
+  "short_name": "خزنة أسراري",
+  "description": "تطبيق آمن لحفظ وإدارة كلمات المرور والحسابات سحابياً مع تشفير متطور.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d0f1a",
+  "theme_color": "#0d0f1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
