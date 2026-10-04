@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>مدير الديون</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div id="screen-main" class="screen active">
+    <header class="top-bar">
+      <button class="icon-btn" id="btn-history" onclick="openHistory()">
+        <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2.08 4.93L6.64 15.42A9 9 0 1 0 13 3z"/></svg>
+        <span>المحفوظات</span>
+      </button>
+      <div class="app-title">
+        <span class="title-icon">💰</span>
+        <span>مدير الديون</span>
+      </div>
+      <button class="icon-btn btn-more-container" id="btn-more" onclick="toggleMoreMenu()">
+        <span id="auth-status-dot" class="status-dot red"></span>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+        <span>خيارات</span>
+      </button>
+    </header>
+
+    <div id="more-menu" class="dropdown-menu hidden">
+      <div class="dropdown-backdrop" onclick="closeMoreMenu()"></div>
+      <div class="dropdown-list">
+        <button class="dropdown-item" onclick="openExchangeRate()">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>
+          تغيير سعر الصرف
+        </button>
+        <button class="dropdown-item" onclick="exportData()">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          تصدير البيانات (JSON)
+        </button>
+        <button class="dropdown-item" onclick="importData()">
+          <svg viewBox="0 0 24 24"><path d="M5 15H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zM12 8l-4 4h3v4h2v-4h3l-4-4z"/></svg>
+          استيراد البيانات
+        </button>
+        <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
+        <button class="dropdown-item auth-item" id="btn-auth" onclick="toggleAuth()">
+          <img id="user-pic" src="" alt="" class="user-pic hidden">
+          <svg id="auth-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          <span id="auth-text">تسجيل الدخول لجوجل</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="amount-section">
+      <div class="amount-display-wrapper">
+        <div class="amount-box active" id="box-lbp" onclick="setActiveCurrency('lbp')">
+          <div class="amount-label">
+            <span class="currency-flag">🇱🇧</span>
+            <span>ليرة لبنانية</span>
+          </div>
+          <div class="amount-value" id="display-lbp">0</div>
+          <div class="currency-tag">LBP</div>
+        </div>
+        <div class="exchange-arrow">
+          <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+        </div>
+        <div class="amount-box" id="box-usd" onclick="setActiveCurrency('usd')">
+          <div class="amount-label">
+            <span class="currency-flag">🇺🇸</span>
+            <span>دولار أمريكي</span>
+          </div>
+          <div class="amount-value" id="display-usd">0</div>
+          <div class="currency-tag">USD</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="keypad">
+      <div class="keypad-grid" style="direction: ltr;">
+        <button class="key" onclick="keyPress('1')">1</button>
+        <button class="key" onclick="keyPress('2')">2</button>
+        <button class="key" onclick="keyPress('3')">3</button>
+        <button class="key" onclick="keyPress('4')">4</button>
+        <button class="key" onclick="keyPress('5')">5</button>
+        <button class="key" onclick="keyPress('6')">6</button>
+        <button class="key" onclick="keyPress('7')">7</button>
+        <button class="key" onclick="keyPress('8')">8</button>
+        <button class="key" onclick="keyPress('9')">9</button>
+        <button class="key key-special" onclick="keyPress('0')">0</button>
+        <button class="key key-special" onclick="keyPress('00')">00</button>
+        <button class="key key-special" onclick="keyPress('000')">000</button>
+        <button class="key key-special" onclick="keyPress('-')">−</button>
+        <button class="key key-special" onclick="keyPress('.')">.</button>
+        <button class="key key-clear" onclick="keyPress('C')">C</button>
+      </div>
+      <button class="key-confirm-full" onclick="confirmAmount()">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        تأكيد
+      </button>
+    </div>
+  </div>
+
+  <div id="screen-history" class="screen">
+    <header class="top-bar">
+      <button class="icon-btn" onclick="closeHistory()">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <span>رجوع</span>
+      </button>
+      <div class="app-title">المحفوظات</div>
+      <button class="icon-btn" id="btn-select" onclick="toggleSelectMode()">
+        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        <span>تحديد</span>
+      </button>
+    </header>
+
+    <div class="history-actions-row">
+      <button class="btn-history-tool" onclick="openSortMenu()">
+        <svg viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+      </button>
+      <button class="btn-history-tool" onclick="toggleHistorySearch()">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+      </button>
+      <button class="btn-add-customer" onclick="addNewCustomer()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        إضافة زبون
+      </button>
+    </div>
+
+    <div id="history-search-container" class="history-search-container hidden">
+      <input type="text" id="history-search-input" class="history-search-input" placeholder="ابحث عن زبون..." oninput="filterHistoryList(this.value)">
+    </div>
+
+    <div class="history-actions" id="delete-actions-container" style="display:none;">
+      <button class="btn-delete-selected hidden" id="btn-delete-selected" onclick="deleteSelected()">
+        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        حذف المحدد
+      </button>
+    </div>
+
+    <div id="customers-list" class="customers-list"></div>
+    <div id="empty-history" class="empty-state hidden">
+      <div class="empty-icon">📋</div>
+      <div class="empty-text">لا توجد سجلات بعد</div>
+      <div class="empty-sub">ابدأ بإضافة زبائن وتسجيل الديون</div>
+    </div>
+  </div>
+
+  <div id="screen-customer" class="screen">
+    <header class="top-bar">
+      <button class="icon-btn" onclick="closeCustomer()">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <span>رجوع</span>
+      </button>
+      <div class="app-title" id="customer-name-header">اسم الزبون</div>
+      <button class="icon-btn danger-icon" onclick="deleteAllCustomerInvoices()">
+        <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+        <span>مسح الكل</span>
+      </button>
+    </header>
+
+    <div class="debt-summary">
+      <div class="summary-card">
+        <div class="summary-label">المجموع بالدولار</div>
+        <div class="summary-value usd-color" id="total-usd-customer">$0</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-card">
+        <div class="summary-label">المجموع بالليرة</div>
+        <div class="summary-value lbp-color" id="total-lbp-customer">0 ل.ل</div>
+      </div>
+    </div>
+
+    <div id="invoices-list" class="invoices-list"></div>
+    <div id="empty-invoices" class="empty-state hidden">
+      <div class="empty-icon">🧾</div>
+      <div class="empty-text">لا توجد فواتير</div>
+    </div>
+  </div>
+
+  <div id="modal-sort" class="modal-overlay hidden">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">ترتيب الزبائن</div>
+      <div class="modal-list">
+        <button class="dropdown-item" onclick="setSortMode('newest')">الأحدث أولاً</button>
+        <button class="dropdown-item" onclick="setSortMode('oldest')">الأقدم أولاً</button>
+        <button class="dropdown-item" onclick="setSortMode('alpha')">أبجدي (أ - ي)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-select-customer" class="modal-overlay hidden">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">اختر الزبون</div>
+      <div class="modal-search-wrapper">
+        <input type="text" id="customer-search" class="modal-search" placeholder="بحث..." oninput="filterCustomersModal(this.value)">
+      </div>
+      <div id="modal-customers-list" class="modal-list"></div>
+      <button class="modal-new-btn" onclick="addNewCustomerFromModal()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        زبون جديد
+      </button>
+    </div>
+  </div>
+
+  <div id="modal-alert" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-dialog-icon" id="alert-icon">⚠️</div>
+      <div class="modal-dialog-title" id="alert-title">تنبيه</div>
+      <div class="modal-dialog-message" id="alert-message"></div>
+      <div class="modal-dialog-buttons">
+        <button class="modal-btn primary" onclick="closeAlert()">حسناً</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-confirm" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-dialog-icon">❓</div>
+      <div class="modal-dialog-title" id="confirm-title">تأكيد</div>
+      <div class="modal-dialog-message" id="confirm-message"></div>
+      <div class="modal-dialog-buttons">
+        <button class="modal-btn secondary" onclick="closeConfirm(false)">إلغاء</button>
+        <button class="modal-btn danger" id="confirm-ok-btn" onclick="closeConfirm(true)">تأكيد</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-prompt" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-dialog-title" id="prompt-title">إدخال</div>
+      <div class="modal-dialog-message" id="prompt-message"></div>
+      <input type="text" id="prompt-input" class="modal-input">
+      <div class="modal-dialog-buttons">
+        <button class="modal-btn secondary" onclick="closePrompt(null)">إلغاء</button>
+        <button class="modal-btn primary" onclick="closePrompt(document.getElementById('prompt-input').value)">موافق</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-invoice-detail" class="modal-overlay hidden">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="invoice-detail-header">
+        <div class="invoice-detail-amount" id="detail-amount"></div>
+        <div class="invoice-detail-date" id="detail-date"></div>
+      </div>
+      <div class="invoice-note-section">
+        <label class="note-label">ملاحظة</label>
+        <textarea id="detail-note" class="note-textarea" placeholder="أضف ملاحظة..."></textarea>
+        <button class="note-save-btn" onclick="saveInvoiceNote()">💾 حفظ الملاحظة</button>
+      </div>
+      <div class="invoice-detail-actions">
+        <button class="inv-action-btn delete" onclick="deleteInvoiceFromDetail()">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          حذف الفاتورة
+        </button>
+        <button class="inv-action-btn close" onclick="closeInvoiceDetail()">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-exchange" class="modal-overlay hidden">
+    <div class="modal-dialog">
+      <div class="modal-dialog-icon">💱</div>
+      <div class="modal-dialog-title">سعر الصرف</div>
+      <div class="modal-dialog-message">أدخل سعر الصرف الحالي (ليرة لكل دولار)</div>
+      <input type="number" id="exchange-input" class="modal-input" placeholder="مثال: 89000">
+      <div class="modal-dialog-buttons">
+        <button class="modal-btn secondary" onclick="closeExchangeModal(false)">إلغاء</button>
+        <button class="modal-btn primary" onclick="closeExchangeModal(true)">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+
+  <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
+</body>
+</html>
