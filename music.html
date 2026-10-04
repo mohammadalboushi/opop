@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Player</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<style>
+  * { box-sizing: border-box; font-family: sans-serif; }
+  body { 
+    background-color: #0b0b0f; 
+    color: #e0e0e0; 
+    margin: 0; 
+    padding: 15px; 
+    user-select: none; 
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #1a1a1a; margin-bottom: 20px;}
+  .header-title { font-size: 13px; color: #aaa; }
+  
+  .control-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+  .label { font-size: 14px; width: 25%; text-align: right; }
+  
+  .slider-wrapper { display: flex; align-items: center; flex: 1; margin: 0 10px; justify-content: center; }
+  .slider-wrapper span { font-size: 18px; margin: 0 10px; color: #aaa; }
+  input[type=range] { 
+    width: 100%; accent-color: #8ab4f8; background: #333; height: 4px; border-radius: 2px; outline: none; -webkit-appearance: none;
+  }
+  input[type=range]::-webkit-slider-thumb { 
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #8ab4f8; cursor: pointer;
+  }
+  
+  .actions { display: flex; align-items: center; gap: 15px; width: 20%; justify-content: flex-end; }
+  .icon { background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 0; }
+  
+  .toggle { 
+    width: 36px; height: 20px; background: #444; border-radius: 10px; position: relative; display: inline-block; cursor: pointer;
+  }
+  .toggle.active { background: #8ab4f8; }
+  .toggle::after { 
+    content: ''; position: absolute; width: 14px; height: 14px; background: #ccc; border-radius: 50%; top: 3px; right: 3px; transition: 0.2s; 
+  }
+  .toggle.active::after { right: 19px; background: #000; }
+
+  .ab-group { display: flex; gap: 10px; justify-content: center; flex: 1; }
+  .ab-btn { background: #ccc; color: #000; border: none; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.2s;}
+  
+  .visualizer { height: 30px; border-bottom: 2px dotted #555; margin: 30px 0; width: 100%; }
+
+  .playback-section { margin-top: auto; padding-bottom: 20px; }
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; }
+  .time { font-size: 11px; color: #aaa; min-width: 35px; text-align: center; }
+  
+  .main-controls { display: flex; align-items: center; justify-content: space-between; padding: 0 10px; }
+  .play-btn { 
+    background: #1a4f8b; color: #8ab4f8; border: none; width: 65px; height: 45px; border-radius: 15px; font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  
+  .song-name { text-align: center; font-size: 13px; color: #8ab4f8; margin-top: 25px; }
+  #fileInput { display: none; }
+</style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <button class="icon" onclick="document.getElementById('fileInput').click()">📂</button>
+    <div class="header-title">مشغل الموسيقى - إعدادات متقدمة ⌄</div>
+    <button class="icon">⋮</button>
+    <button class="icon">⚙</button>
+  </div>
+
+  <!-- Pitch -->
+  <div class="control-row">
+    <div class="label">درجة الصوت</div>
+    <div class="slider-wrapper">
+      <span>-</span>
+      <input type="range" id="pitch" min="-12" max="12" value="0" step="1">
+      <span>+</span>
+    </div>
+    <div class="actions">
+      <button class="icon">🔗</button>
+      <button class="icon" onclick="resetSlider('pitch')">↺</button>
+    </div>
+  </div>
+
+  <!-- Tempo -->
+  <div class="control-row">
+    <div class="label">إيقاع</div>
+    <div class="slider-wrapper">
+      <span>-</span>
+      <input type="range" id="tempo" min="0.5" max="2" value="1" step="0.05">
+      <span>+</span>
+    </div>
+    <div class="actions">
+      <button class="icon" onclick="resetSlider('tempo')">↺</button>
+    </div>
+  </div>
+
+  <!-- Loop A/B -->
+  <div class="control-row">
+    <div class="label">حلقة موسيقية</div>
+    <div class="ab-group">
+      <button class="ab-btn" id="btnA">A</button>
+      <button class="ab-btn" id="btnB">B</button>
+    </div>
+    <div class="actions">
+      <button class="icon" id="btnClearAB">✕</button>
+    </div>
+  </div>
+
+  <!-- Amplifier -->
+  <div class="control-row">
+    <div class="label">مضخم الكتروني</div>
+    <div class="slider-wrapper">
+      <span>-</span>
+      <input type="range" id="amp" min="1" max="5" value="2.5" step="0.1">
+      <span>+</span>
+    </div>
+    <div class="actions">
+      <div class="toggle" id="ampToggle"></div>
+      <button class="icon" onclick="resetSlider('amp')">↺</button>
+    </div>
+  </div>
+
+  <!-- Echo -->
+  <div class="control-row">
+    <div class="label">صدى الصوت ⌄</div>
+    <div class="slider-wrapper"></div>
+    <div class="actions">
+      <div class="toggle" id="echoToggle"></div>
+      <button class="icon">↺</button>
+    </div>
+  </div>
+
+  <!-- Reverb -->
+  <div class="control-row">
+    <div class="label">التردد ⌄</div>
+    <div class="slider-wrapper"></div>
+    <div class="actions">
+      <div class="toggle active" id="reverbToggle"></div>
+      <button class="icon">↺</button>
+    </div>
+  </div>
+
+  <div class="visualizer"></div>
+
+  <!-- Playback -->
+  <div class="playback-section">
+    <div class="progress">
+      <span class="time" id="currentTime">0:00</span>
+      <input type="range" id="seek" value="0" max="100">
+      <span class="time" id="duration">0:00</span>
+    </div>
+    
+    <div class="main-controls">
+      <button class="icon">🔁</button>
+      <button class="icon">⏮</button>
+      <button class="icon" onclick="audio.currentTime -= 5">⏪</button>
+      <button class="play-btn" id="playBtn">▶</button>
+      <button class="icon" onclick="audio.currentTime += 5">⏩</button>
+      <button class="icon">⏭</button>
+      <button class="icon">🔀</button>
+    </div>
+    
+    <div class="song-name" id="songTitle">🎵 اضغط على أيقونة المجلد لاختيار أغنية...</div>
+  </div>
+
+  <input type="file" id="fileInput" accept="audio/*">
+  <audio id="audio"></audio>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const fileInput = document.getElementById('fileInput');
+    const playBtn = document.getElementById('playBtn');
+    
+    // Sliders
+    const pitchSlider = document.getElementById('pitch');
+    const tempoSlider = document.getElementById('tempo');
+    const ampSlider = document.getElementById('amp');
+    const seekSlider = document.getElementById('seek');
+    
+    // Toggles
+    const ampToggle = document.getElementById('ampToggle');
+    const echoToggle = document.getElementById('echoToggle');
+    const reverbToggle = document.getElementById('reverbToggle');
+    
+    // Labels
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const songTitle = document.getElementById('songTitle');
+    
+    // A/B Loop
+    const btnA = document.getElementById('btnA');
+    const btnB = document.getElementById('btnB');
+    const btnClearAB = document.getElementById('btnClearAB');
+    let loopA = null, loopB = null;
+
+    let source, pitchShift, gainNode, echoNode, reverbNode, isInitialized = false;
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        songTitle.innerText = "🎵 " + file.name;
+        audio.load();
+      }
+    });
+
+    async function initAudioGraph() {
+      if (isInitialized) return;
+      await Tone.start();
+      
+      const actx = Tone.context.rawContext;
+      source = actx.createMediaElementSource(audio);
+      
+      // تجهيز الفلاتر
+      pitchShift = new Tone.PitchShift(0);
+      gainNode = new Tone.Volume(0);
+      echoNode = new Tone.FeedbackDelay("8n", 0.4);
+      reverbNode = new Tone.Reverb(2.5);
+      
+      // الإعدادات الافتراضية للفلاتر (حسب التوجلز)
+      echoNode.wet.value = echoToggle.classList.contains('active') ? 1 : 0;
+      reverbNode.wet.value = reverbToggle.classList.contains('active') ? 1 : 0;
+      
+      // السلسلة الصوتية
+      Tone.connect(source, pitchShift);
+      Tone.connect(pitchShift, gainNode);
+      Tone.connect(gainNode, echoNode);
+      Tone.connect(echoNode, reverbNode);
+      Tone.connect(reverbNode, Tone.getDestination());
+      
+      isInitialized = true;
+    }
+
+    playBtn.addEventListener('click', async () => {
+      if (!audio.src) return;
+      await initAudioGraph();
+      
+      if (Tone.context.state !== 'running') {
+        await Tone.context.resume();
+      }
+      
+      if (audio.paused) {
+        audio.play();
+        playBtn.innerText = '⏸';
+      } else {
+        audio.pause();
+        playBtn.innerText = '▶';
+      }
+    });
+
+    // Pitch
+    pitchSlider.addEventListener('input', (e) => {
+      if(pitchShift) pitchShift.pitch = parseFloat(e.target.value);
+    });
+
+    // Tempo
+    tempoSlider.addEventListener('input', (e) => {
+      audio.playbackRate = parseFloat(e.target.value);
+    });
+
+    // Amp
+    ampSlider.addEventListener('input', (e) => {
+      if(gainNode && ampToggle.classList.contains('active')) {
+        gainNode.volume.value = (parseFloat(e.target.value) - 1) * 8; 
+      }
+    });
+
+    // Toggles Events
+    ampToggle.addEventListener('click', function() {
+      this.classList.toggle('active');
+      if (gainNode) gainNode.volume.value = this.classList.contains('active') ? (ampSlider.value - 1) * 8 : 0;
+    });
+
+    echoToggle.addEventListener('click', function() {
+      this.classList.toggle('active');
+      if (echoNode) echoNode.wet.value = this.classList.contains('active') ? 1 : 0;
+    });
+
+    reverbToggle.addEventListener('click', function() {
+      this.classList.toggle('active');
+      if (reverbNode) reverbNode.wet.value = this.classList.contains('active') ? 1 : 0;
+    });
+
+    // A/B Loop Events
+    btnA.addEventListener('click', () => { 
+      loopA = audio.currentTime; 
+      btnA.style.background = '#8ab4f8'; 
+    });
+    
+    btnB.addEventListener('click', () => { 
+      if(loopA !== null) { 
+        loopB = audio.currentTime; 
+        btnB.style.background = '#8ab4f8'; 
+      }
+    });
+    
+    btnClearAB.addEventListener('click', () => { 
+      loopA = null; loopB = null; 
+      btnA.style.background = '#ccc'; 
+      btnB.style.background = '#ccc'; 
+    });
+
+    // Time Tracking & Loop Logic
+    audio.addEventListener('timeupdate', () => {
+      if (audio.duration) {
+        seekSlider.value = (audio.currentTime / audio.duration) * 100;
+        currentTimeEl.innerText = formatTime(audio.currentTime);
+        durationEl.innerText = formatTime(audio.duration);
+        
+        if (loopA !== null && loopB !== null && audio.currentTime >= loopB) {
+          audio.currentTime = loopA;
+        }
+      }
+    });
+
+    seekSlider.addEventListener('input', (e) => {
+      if (audio.duration) {
+        audio.currentTime = (e.target.value / 100) * audio.duration;
+      }
+    });
+
+    function resetSlider(id) {
+      const slider = document.getElementById(id);
+      if(id === 'pitch') { slider.value = 0; if(pitchShift) pitchShift.pitch = 0; }
+      if(id === 'tempo') { slider.value = 1; audio.playbackRate = 1; }
+      if(id === 'amp') { slider.value = 2.5; if(gainNode && ampToggle.classList.contains('active')) gainNode.volume.value = 12; }
+    }
+
+    function formatTime(seconds) {
+      if(isNaN(seconds)) return "0:00";
+      let min = Math.floor(seconds / 60);
+      let sec = Math.floor(seconds % 60);
+      return min + ":" + (sec < 10 ? "0" : "") + sec;
+    }
+  </script>
+</body>
+</html>
