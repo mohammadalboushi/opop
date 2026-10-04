@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0B0D12">
+<title>خزائني — إدارة المشاريع والبيانات</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230B0D12'/%3E%3Cpath d='M50 18 L78 32 L78 54 C78 72 66 84 50 90 C34 84 22 72 22 54 L22 32 Z' fill='none' stroke='%23C9A15C' stroke-width='5'/%3E%3Ccircle cx='50' cy='50' r='8' fill='%23C9A15C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Almarai:wght@400;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============ RESET & TOKENS ============ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0B0D12;
+  --bg-elev:#0F121A;
+  --surface:#151821;
+  --surface-2:#1B1F2A;
+  --surface-3:#232937;
+  --border:#262C3A;
+  --border-soft:#1E232F;
+  --text:#ECE8DE;
+  --text-dim:#9AA0B0;
+  --text-faint:#5E6473;
+  --accent:#C9A15C;
+  --accent-soft:rgba(201,161,92,.14);
+  --accent-ink:#1A1508;
+  --danger:#E2665A;
+  --danger-soft:rgba(226,102,90,.14);
+  --success:#6FCF97;
+  --success-soft:rgba(111,207,151,.14);
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:26px;
+  --shadow-soft:0 1px 2px rgba(0,0,0,.5), 0 1px 1px rgba(0,0,0,.3);
+  --shadow-lift:0 18px 40px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.4);
+  --font-head:'Almarai','Tajawal',sans-serif;
+  --font-body:'IBM Plex Sans Arabic','Tajawal',sans-serif;
+  --font-mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;background:var(--bg)}
+body{
+  font-family:var(--font-body);
+  color:var(--text);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(90% 60% at 50% -10%, rgba(201,161,92,.08), transparent 60%),
+    var(--bg);
+  min-height:100%;
+}
+body.lock{overflow:hidden}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+input,textarea,select{font-family:inherit;color:inherit;background:none;border:none;outline:none}
+::selection{background:var(--accent-soft);color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+/* ============ APP SHELL ============ */
+#app{
+  max-width:760px;
+  margin:0 auto;
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  padding-top:var(--safe-top);
+  position:relative;
+}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 18px 10px;
+  gap:12px;
+}
+.brand{display:flex;align-items:center;gap:10px;flex:1;overflow:hidden}
+.brand-mark{
+  width:38px;height:38px;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:12px;
+  background:linear-gradient(155deg,var(--surface-3),var(--surface));
+  border:1px solid var(--border);
+  box-shadow:var(--shadow-soft);
+}
+.brand-mark svg{width:20px;height:20px}
+.brand-text{flex:1;min-width:0}
+.brand-text h1{
+  font-family:var(--font-head);
+  font-weight:800;
+  font-size:19px;
+  letter-spacing:.2px;
+  line-height:1.1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.brand-text p{font-size:12px;color:var(--text-faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.icon-btn{
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--border);
+  transition:background .15s ease, transform .1s ease;
+  flex:none;
+}
+.icon-btn svg{width:19px;height:19px;stroke:var(--text-dim)}
+.icon-btn:hover{background:var(--surface-2)}
+.icon-btn:active{transform:scale(.94)}
+.btn-back{
+  display:none;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:12px;
+  background:var(--surface-2);border:1px solid var(--border);
+  flex:none;transition:background .15s, transform .1s;
+}
+.btn-back svg{width:20px;height:20px;stroke:var(--accent)}
+.btn-back:active{transform:scale(.94)}
+
+/* ============ SEARCH BAR ============ */
+.search-wrap{padding:4px 18px 10px}
+.search-box{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:12px 14px;
+  transition:border-color .15s, background .15s;
+}
+.search-box:focus-within{border-color:var(--accent);background:var(--surface-2)}
+.search-box svg{width:18px;height:18px;stroke:var(--text-dim);flex:none}
+.search-box input{flex:1;font-size:14px;color:var(--text)}
+.search-box input::placeholder{color:var(--text-faint)}
+.search-clear{
+  width:24px;height:24px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+  background:var(--surface-3);color:var(--text-dim);flex:none;
+}
+.search-clear.show{display:flex}
+.search-clear svg{width:14px;height:14px;stroke:currentColor}
+
+/* ============ TABS ============ */
+.tabs-wrap{padding:4px 0 14px;position:relative}
+.tabs{
+  display:flex;gap:8px;
+  padding:0 18px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  scroll-snap-type:x proximity;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  scroll-snap-align:start;
+  width:110px; /* Fixed width exactly as requested */
+  flex:none;
+  display:flex;align-items:center;gap:6px;
+  padding:10px 12px;
+  border-radius:999px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  transition:background .15s ease,border-color .15s ease,color .15s ease,transform .1s ease;
+  user-select:none;-webkit-user-select:none;
+}
+.tab .dot{width:6px;height:6px;border-radius:50%;background:var(--text-faint);flex:none;transition:background .15s}
+.tab .tab-text{
+  flex:1;
+  font-size:13.5px;font-weight:600;color:var(--text-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:center; /* Centers short text, dots handle long text */
+}
+.tab.active{background:var(--accent-soft);border-color:rgba(201,161,92,.45);}
+.tab.active .tab-text{color:var(--accent)}
+.tab.active .dot{background:var(--accent)}
+.tab:active{transform:scale(.97)}
+.tab-add{
+  flex:none;
+  width:40px;height:40px;
+  border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;
+  border:1.5px dashed var(--border);
+  color:var(--text-faint);
+  transition:border-color .15s, color .15s, background .15s;
+}
+.tab-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.tab-add svg{width:16px;height:16px}
+
+/* ============ CONTENT ============ */
+.content{
+  flex:1;
+  padding:4px 18px calc(120px + var(--safe-bottom));
+}
+.cards-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+@media(min-width:640px){.cards-grid{grid-template-columns:1fr 1fr}}
+
+/* Folder / Account Card */
+.acc-card{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-md);
+  padding:16px;
+  box-shadow:var(--shadow-soft);
+  transition:border-color .15s ease, transform .12s ease, background .15s;
+  animation:cardIn .28s cubic-bezier(.2,.8,.2,1) both;
+  cursor:pointer;
+}
+.acc-card:active{transform:scale(.98);background:var(--surface-2)}
+.acc-info{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.acc-ic{
+  width:42px;height:42px;border-radius:12px;
+  background:var(--surface-3);display:flex;align-items:center;justify-content:center;
+  flex:none;border:1px solid var(--border);
+}
+.acc-ic svg{width:20px;height:20px;stroke:var(--accent)}
+.acc-text{flex:1;min-width:0}
+.acc-text h3{font-size:14.5px;font-weight:700;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:right}
+.acc-text p{font-size:12px;color:var(--text-faint);display:flex;align-items:center;gap:4px}
+.acc-arrow{width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex:none;color:var(--text-dim)}
+.acc-arrow svg{width:18px;height:18px;stroke:currentColor}
+.badge-proj{
+  font-size:10px;padding:2px 6px;border-radius:6px;
+  background:var(--surface-2);border:1px solid var(--border-soft);
+}
+
+/* Data Card */
+.card{
+  background:linear-gradient(180deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-md);
+  padding:15px 15px 13px;
+  position:relative;
+  box-shadow:var(--shadow-soft);
+  animation:cardIn .28s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:9px}
+.card-label{font-size:12.5px;font-weight:700;color:var(--text-dim);letter-spacing:.2px;display:flex;align-items:center;gap:6px}
+.card-label .tag-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
+.card-more{
+  width:28px;height:28px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;color:var(--text-faint);
+  transition:background .15s, color .15s;flex:none;
+}
+.card-more:hover{background:var(--surface-3);color:var(--text-dim)}
+.card-more svg{width:16px;height:16px}
+.card-value{
+  font-family:var(--font-mono);font-size:14px;color:var(--text);
+  word-break:break-all;line-height:1.55;min-height:20px;direction:ltr;text-align:left;unicode-bidi:plaintext;
+}
+.card-value.plain{font-family:var(--font-body);direction:rtl;text-align:right}
+.card-actions{
+  display:flex;align-items:center;justify-content:flex-start;gap:6px;
+  margin-top:11px;padding-top:10px;border-top:1px solid var(--border-soft);
+}
+.chip-btn{
+  display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;
+  background:var(--surface-3);font-size:12.5px;font-weight:600;color:var(--text-dim);
+  transition:background .15s, color .15s, transform .1s;
+}
+.chip-btn svg{width:14px;height:14px}
+.chip-btn:hover{background:var(--accent-soft);color:var(--accent)}
+.chip-btn:active{transform:scale(.95)}
+.chip-btn.copied{background:var(--success-soft);color:var(--success)}
+
+/* ============ EMPTY STATES ============ */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:64px 24px 40px;color:var(--text-dim)}
+.empty-glyph{
+  width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface);border:1px solid var(--border);margin-bottom:18px;
+}
+.empty-glyph svg{width:28px;height:28px;stroke:var(--accent)}
+.empty h3{font-family:var(--font-head);font-size:16.5px;color:var(--text);margin-bottom:6px;font-weight:700}
+.empty p{font-size:13.5px;color:var(--text-faint);max-width:280px;line-height:1.6;margin-bottom:20px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:14px;
+  background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13.5px;
+  box-shadow:0 8px 20px rgba(201,161,92,.25);transition:transform .1s ease, box-shadow .15s ease;
+}
+.btn-primary:active{transform:scale(.96)}
+.btn-primary svg{width:16px;height:16px}
+
+/* ============ FAB ============ */
+.fab{
+  position:fixed;left:50%;transform:translateX(calc(-380px + 18px));
+  bottom:calc(22px + var(--safe-bottom));
+  width:58px;height:58px;border-radius:18px;
+  background:var(--accent);color:var(--accent-ink);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 14px 30px rgba(201,161,92,.35), 0 4px 10px rgba(0,0,0,.4);
+  z-index:40;transition:transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s, opacity .15s;
+}
+.fab svg{width:24px;height:24px;transition:transform .2s}
+.fab:active{transform:translateX(calc(-380px + 18px)) scale(.9)}
+@media(max-width:796px){
+  .fab{left:auto;right:18px;transform:none}
+  .fab:active{transform:scale(.9)}
+}
+.fab.hide{display:none}
+
+/* ============ OVERLAYS ============ */
+#overlayRoot{position:fixed;inset:0;pointer-events:none;z-index:100}
+.backdrop{
+  position:fixed;inset:0;background:rgba(5,6,9,.6);backdrop-filter:blur(2px);
+  opacity:0;transition:opacity .22s ease;pointer-events:auto;
+}
+.backdrop.show{opacity:1}
+
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;max-width:760px;margin:0 auto;
+  background:var(--bg-elev);border:1px solid var(--border);border-bottom:none;
+  border-radius:24px 24px 0 0;padding:10px 20px calc(22px + var(--safe-bottom));
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.9,.25,1);
+  pointer-events:auto;box-shadow:var(--shadow-lift);max-height:88vh;overflow-y:auto;
+}
+.sheet.show{transform:translateY(0)}
+.sheet-handle{width:38px;height:4px;border-radius:99px;background:var(--border);margin:6px auto 14px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sheet-head h2{font-family:var(--font-head);font-size:17px;font-weight:700}
+.sheet-head p{font-size:12.5px;color:var(--text-faint);margin-top:3px}
+.sheet-close{width:32px;height:32px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex:none}
+.sheet-close svg{width:15px;height:15px;stroke:var(--text-dim)}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-dim);margin-bottom:7px}
+.field input[type=text],.field textarea{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:13px;padding:13px 14px;font-size:14.5px;color:var(--text);
+  transition:border-color .15s ease, background .15s ease;
+}
+.proj-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 0 6px}
+.proj-chips::-webkit-scrollbar{display:none}
+.proj-chip{flex:none;padding:10px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-size:13.5px;font-weight:600;transition:all .15s}
+.proj-chip.active{background:var(--accent-soft);border-color:rgba(201,161,92,.5);color:var(--accent)}
+.field textarea{resize:vertical;min-height:64px;font-family:var(--font-mono);direction:ltr;text-align:left;line-height:1.5}
+.field input:focus,.field textarea:focus{border-color:var(--accent);background:var(--surface-2)}
+.field-hint{font-size:11.5px;color:var(--text-faint);margin-top:6px;line-height:1.5}
+
+.switch-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:13px;padding:12px 14px;margin-bottom:14px;
+}
+.switch-row .label-block strong{display:block;font-size:13.5px;font-weight:600}
+.switch-row .label-block span{font-size:11.5px;color:var(--text-faint)}
+.switch{width:44px;height:26px;border-radius:99px;background:var(--surface-3);border:1px solid var(--border);position:relative;flex:none;transition:background .18s}
+.switch .knob{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:var(--text-dim);transition:transform .18s cubic-bezier(.3,1,.4,1), background .18s}
+.switch.on{background:var(--accent-soft);border-color:rgba(201,161,92,.5)}
+.switch.on .knob{transform:translateX(-18px);background:var(--accent)}
+
+.sheet-actions{display:flex;gap:10px;margin-top:4px}
+.btn{flex:1;padding:13px 16px;border-radius:14px;font-weight:700;font-size:14px;text-align:center;transition:transform .1s, background .15s, opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn-ghost{background:var(--surface);color:var(--text-dim);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface-2)}
+.btn-accent{background:var(--accent);color:var(--accent-ink)}
+.btn-danger{background:var(--danger-soft);color:var(--danger)}
+.btn:disabled{opacity:.45;pointer-events:none}
+
+.menu-list{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.menu-item{display:flex;align-items:center;gap:13px;padding:13px 10px;border-radius:13px;transition:background .15s;text-align:right}
+.menu-item:hover{background:var(--surface)}
+.menu-item .m-ic{width:38px;height:38px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border:1px solid var(--border-soft)}
+.menu-item .m-ic svg{width:17px;height:17px;stroke:var(--text-dim)}
+.menu-item.danger .m-ic{background:var(--danger-soft);border-color:transparent}
+.menu-item.danger .m-ic svg{stroke:var(--danger)}
+.menu-item .m-text strong{display:block;font-size:14px;font-weight:600}
+.menu-item .m-text span{font-size:11.5px;color:var(--text-faint)}
+.menu-item.danger .m-text strong{color:var(--danger)}
+
+.ctx-menu{
+  position:fixed;min-width:190px;background:var(--bg-elev);border:1px solid var(--border);
+  border-radius:16px;padding:6px;box-shadow:var(--shadow-lift);pointer-events:auto;
+  transform:scale(.9);opacity:0;transition:transform .16s cubic-bezier(.3,1.2,.4,1), opacity .12s ease;z-index:120;
+}
+.ctx-menu.show{transform:scale(1);opacity:1}
+.ctx-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--text);width:100%;text-align:right;transition:background .12s}
+.ctx-item:hover{background:var(--surface-2)}
+.ctx-item svg{width:16px;height:16px;stroke:var(--text-dim);flex:none}
+.ctx-item.danger{color:var(--danger)}
+.ctx-item.danger svg{stroke:var(--danger)}
+.ctx-sep{height:1px;background:var(--border-soft);margin:5px 4px}
+
+.toast-stack{position:fixed;bottom:calc(24px + var(--safe-bottom));left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;z-index:200;padding:0 20px}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:9px;background:var(--bg-elev);border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:14px;font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lift);animation:toastIn .28s cubic-bezier(.2,.9,.25,1) both;max-width:340px}
+.toast.leave{animation:toastOut .22s ease forwards}
+.toast svg{width:16px;height:16px;flex:none}
+.toast.success svg{stroke:var(--success)}
+.toast.error svg{stroke:var(--danger)}
+.toast.info svg{stroke:var(--accent)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(6px) scale(.96)}}
+
+.hidden-file-input{display:none}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="topbar" id="topbar">
+    <button class="btn-back" id="btnBack" aria-label="رجوع">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="brand">
+      <div class="brand-mark" id="brandMark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C9A15C" stroke-width="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><circle cx="12" cy="11" r="2.1" fill="#C9A15C" stroke="none"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1 id="topTitle">خزائني</h1>
+        <p id="topSubtitle">إدارة المشاريع والبيانات</p>
+      </div>
+    </div>
+    <button class="icon-btn" id="optionsBtn" aria-label="خيارات">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.2" fill="currentColor" stroke="none"/></svg>
+    </button>
+  </header>
+
+  <div class="search-wrap" id="searchWrap">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="ابحث عن مشروع، حساب، أو بيانات..." autocomplete="off">
+      <button class="search-clear" id="searchClear" aria-label="مسح البحث"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+  </div>
+
+  <div class="tabs-wrap" id="tabsWrap">
+    <div class="tabs" id="tabs"></div>
+  </div>
+
+  <main class="content" id="content"></main>
+
+  <button class="fab" id="fabAdd" aria-label="إضافة">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<div id="overlayRoot"></div>
+<div class="toast-stack" id="toastStack"></div>
+<input type="file" id="importInput" class="hidden-file-input" accept="application/json,.json">
+
+<script>
+(function(){
+"use strict";
+
+const ICON = {
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg>',
+  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.2A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17.7 17.7 0 0 1-3.4 4.3M6.6 6.7C4 8.5 2 12 2 12s3.6 7 10 7a10 10 0 0 0 4-.8"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  vault:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>',
+  folder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  download:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 19h14"/></svg>',
+  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-4 4m4-4l4 4"/><path d="M5 5h14"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>',
+  chevronL:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  appIcon:'<svg viewBox="0 0 24 24" fill="none" stroke="#C9A15C" stroke-width="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><circle cx="12" cy="11" r="2.1" fill="#C9A15C" stroke="none"/></svg>'
+};
+
+const DB_KEY = 'vault_manager_db_v2';
+const Adapter = {
+  async load(){
+    try{
+      let raw = localStorage.getItem(DB_KEY);
+      if(!raw) {
+        // Fallback for migration from V1
+        raw = localStorage.getItem('vault_manager_db_v1');
+      }
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  },
+  async save(data){
+    try{ localStorage.setItem(DB_KEY, JSON.stringify(data)); return true; }
+    catch(e){ return false; }
+  }
+};
+
+function uid(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,9);
+}
+
+/* ============================================================
+   STATE MANAGEMENT
+   Structure: Projects -> Accounts -> Fields
+============================================================ */
+let state = {
+  version: 2,
+  projects: [],
+  activeProjectId: 'all',
+  searchQuery: '',
+  ui: { mode: 'home', viewedProject: null, viewedAccount: null }
+};
+
+function defaultState(){ return { version:2, projects:[], activeProjectId:'all', searchQuery:'', ui:{mode:'home'} }; }
+
+async function loadState(){
+  const data = await Adapter.load();
+  if(data && Array.isArray(data.projects)){
+    // Migration from V1 (Cards to Accounts -> Fields)
+    data.projects.forEach(p => {
+      if(p.cards && !p.accounts){
+        p.accounts = [{
+          id: uid(), name: 'حسابات عامة', createdAt: p.createdAt || Date.now(),
+          fields: p.cards.map(c => ({...c, _revealed:false}))
+        }];
+        delete p.cards;
+      } else if (p.accounts) {
+        p.accounts.forEach(acc => acc.fields.forEach(f => f._revealed=false));
+      }
+    });
+    state = Object.assign(defaultState(), data);
+  } else {
+    state = defaultState();
+  }
+}
+
+let saveTimer=null;
+function persist(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ Adapter.save(state); }, 120);
+}
+
+/* ============================================================
+   ROUTING & HISTORY (Android Back Button)
+============================================================ */
+const Nav = {
+  stack: [],
+  open(id, hide){
+    this.stack.push({id, hide});
+    history.pushState({ovl:id, depth:this.stack.length}, '');
+  },
+  requestClose(id){
+    const top = this.stack[this.stack.length-1];
+    if(top && top.id===id) history.back();
+    else {
+      const idx = this.stack.findIndex(o=>o.id===id);
+      if(idx>-1){ const [e]=this.stack.splice(idx,1); e.hide(); }
+    }
+  },
+  popTop(){ const entry = this.stack.pop(); if(entry) entry.hide(); },
+  get depth(){ return this.stack.length; }
+};
+window.addEventListener('popstate', (e)=>{
+  if(Nav.depth>0) Nav.popTop();
+  else if(state.ui.mode === 'account'){
+    // Native back from account view to home
+    state.ui = {mode:'home', viewedProject:null, viewedAccount:null};
+    renderAll();
+  }
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Escape'){
+    if(Nav.depth>0) history.back();
+    else if(state.ui.mode === 'account') navigateHome();
+  }
+});
+
+function navigateHome(){
+  if(state.ui.mode === 'account'){
+    history.back(); // will trigger popstate
+  }
+}
+function navigateToAccount(projId, accId){
+  state.ui = { mode: 'account', viewedProject: projId, viewedAccount: accId };
+  history.pushState({view:'account'}, '');
+  renderAll();
+}
+
+/* ============================================================
+   UI HELPERS
+============================================================ */
+const toastStack = document.getElementById('toastStack');
+function toast(msg, type='info'){
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = (type==='success'?ICON.check:type==='error'?ICON.warn:ICON.vault) + '<span></span>';
+  el.querySelector('span').textContent = msg;
+  toastStack.appendChild(el);
+  setTimeout(()=>{ el.classList.add('leave'); setTimeout(()=>el.remove(), 240); }, 2200);
+}
+
+const overlayRoot = document.getElementById('overlayRoot');
+function openSheet({id, title, subtitle, bodyHTML, onMount, onClose}){
+  const wrap = document.createElement('div'); wrap.style.pointerEvents='auto';
+  const backdrop = document.createElement('div'); backdrop.className='backdrop';
+  const sheet = document.createElement('div'); sheet.className='sheet';
+  sheet.innerHTML = `
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <div><h2>${title}</h2>${subtitle?`<p>${subtitle}</p>`:''}</div>
+      <button class="sheet-close" data-close aria-label="إغلاق">${ICON.close}</button>
+    </div>
+    <div class="sheet-body">${bodyHTML}</div>
+  `;
+  wrap.appendChild(backdrop); wrap.appendChild(sheet); overlayRoot.appendChild(wrap);
+  document.body.classList.add('lock');
+  requestAnimationFrame(()=>{ backdrop.classList.add('show'); sheet.classList.add('show'); });
+
+  function hide(){
+    backdrop.classList.remove('show'); sheet.classList.remove('show');
+    document.body.classList.remove('lock');
+    setTimeout(()=>{ wrap.remove(); }, 260);
+    if(onClose) onClose();
+  }
+  function close(){ Nav.requestClose(id); }
+  backdrop.addEventListener('click', close);
+  sheet.querySelector('[data-close]').addEventListener('click', close);
+  Nav.open(id, hide);
+  if(onMount) onMount(sheet, close);
+  return {sheet, close};
+}
+
+let ctxMenuEl = null;
+function openContextMenu(x, y, items){
+  if(ctxMenuEl){ ctxMenuEl.classList.remove('show'); setTimeout(()=>ctxMenuEl.remove(),160); ctxMenuEl=null; }
+  const id = 'ctx-'+uid();
+  const menu = document.createElement('div'); menu.className='ctx-menu'; menu.style.pointerEvents='auto';
+  menu.innerHTML = items.map(it=> it.sep ? '<div class="ctx-sep"></div>' : `<button class="ctx-item ${it.danger?'danger':''}" data-act="${it.act}">${it.icon}<span>${it.label}</span></button>`).join('');
+  overlayRoot.appendChild(menu); ctxMenuEl = menu;
+
+  const vw = window.innerWidth, vh = window.innerHeight;
+  requestAnimationFrame(()=>{
+    const r = menu.getBoundingClientRect();
+    let left = x - r.width/2; left = Math.max(10, Math.min(left, vw - r.width - 10));
+    let top = y; if(top + r.height > vh - 20) top = y - r.height - 14;
+    menu.style.left = left+'px'; menu.style.top = top+'px'; menu.classList.add('show');
+  });
+
+  function hide(){ if(ctxMenuEl){ ctxMenuEl.classList.remove('show'); setTimeout(()=>ctxMenuEl.remove(),160); ctxMenuEl=null; } }
+  function close(){ Nav.requestClose(id); }
+  Nav.open(id, hide);
+
+  const backdrop = document.createElement('div');
+  backdrop.style.cssText='position:fixed;inset:0;pointer-events:auto;background:transparent;z-index:110';
+  overlayRoot.insertBefore(backdrop, menu);
+  backdrop.addEventListener('click', close);
+
+  menu.querySelectorAll('[data-act]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const item = items.find(i=>i.act===btn.getAttribute('data-act'));
+      close(); backdrop.remove();
+      if(item && item.run) setTimeout(item.run, 160);
+    });
+  });
+  const origHide = hide; Nav.stack[Nav.stack.length-1].hide = function(){ origHide(); backdrop.remove(); };
+}
+
+function openConfirm({title, message, confirmLabel, danger, onConfirm}){
+  openSheet({
+    id:'confirm-'+uid(), title,
+    bodyHTML: `<p style="font-size:13.5px;color:var(--text-dim);line-height:1.7;margin-bottom:20px">${message}</p>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-cancel>إلغاء</button><button class="btn ${danger?'btn-danger':'btn-accent'}" data-ok>${confirmLabel}</button></div>`,
+    onMount:(sheet, close)=>{
+      sheet.querySelector('[data-cancel]').addEventListener('click', close);
+      sheet.querySelector('[data-ok]').addEventListener('click', ()=>{ close(); setTimeout(()=>onConfirm(), 180); });
+    }
+  });
+}
+
+function bindLongPress(el, handler){
+  let timer=null, startX=0, startY=0, fired=false;
+  function start(x,y){ fired=false; startX=x; startY=y; timer=setTimeout(()=>{ fired=true; if(navigator.vibrate) try{navigator.vibrate(8);}catch(e){} handler(x,y); }, 480); }
+  function move(x,y){ if(Math.abs(x-startX)>10 || Math.abs(y-startY)>10) clearTimeout(timer); }
+  function end(){ clearTimeout(timer); }
+  el.addEventListener('touchstart', e=>{ start(e.touches[0].clientX,e.touches[0].clientY); }, {passive:true});
+  el.addEventListener('touchmove', e=>{ move(e.touches[0].clientX,e.touches[0].clientY); }, {passive:true});
+  el.addEventListener('touchend', end); el.addEventListener('touchcancel', end);
+  el.addEventListener('mousedown', e=>{ if(e.button===0) start(e.clientX,e.clientY); });
+  el.addEventListener('mousemove', e=>{ move(e.clientX,e.clientY); });
+  el.addEventListener('mouseup', end); el.addEventListener('mouseleave', end);
+  el.addEventListener('contextmenu', e=>{ e.preventDefault(); handler(e.clientX, e.clientY); });
+}
+
+async function copyToClipboard(text){
+  try{ await navigator.clipboard.writeText(text); return true; }
+  catch(e){
+    try{
+      const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); return true;
+    }catch(e2){ return false; }
+  }
+}
+function maskValue(v){
+  if(!v) return ''; const len = v.length; if(len<=6) return '•'.repeat(len);
+  return v.slice(0, Math.min(12, Math.ceil(len*0.35))) + '•'.repeat(Math.min(16, len-Math.min(12, Math.ceil(len*0.35))));
+}
+function escapeHTML(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function matchQuery(query, ...texts){
+  const q = query.toLowerCase().trim(); if(!q) return true;
+  const terms = q.split(/\s+/); const combined = texts.filter(Boolean).join(' ').toLowerCase();
+  return terms.every(t => combined.includes(t));
+}
+
+/* ============================================================
+   MAIN RENDER FLOW
+============================================================ */
+const UI = {
+  topbar: document.getElementById('topbar'),
+  btnBack: document.getElementById('btnBack'),
+  brandMark: document.getElementById('brandMark'),
+  topTitle: document.getElementById('topTitle'),
+  topSub: document.getElementById('topSubtitle'),
+  optionsBtn: document.getElementById('optionsBtn'),
+  searchWrap: document.getElementById('searchWrap'),
+  searchInput: document.getElementById('searchInput'),
+  searchClear: document.getElementById('searchClear'),
+  tabsWrap: document.getElementById('tabsWrap'),
+  tabs: document.getElementById('tabs'),
+  content: document.getElementById('content'),
+  fab: document.getElementById('fabAdd')
+};
+
+function renderAll(){
+  if(state.ui.mode === 'home'){
+    renderTopbar(false);
+    UI.searchWrap.style.display = 'block';
+    UI.tabsWrap.style.display = 'block';
+    renderTabs();
+    renderHomeContent();
+    UI.fab.classList.remove('hide');
+  } else {
+    renderTopbar(true);
+    UI.searchWrap.style.display = 'none';
+    UI.tabsWrap.style.display = 'none';
+    renderAccountContent();
+    UI.fab.classList.remove('hide');
+  }
+}
+
+function renderTopbar(isAccount){
+  if(isAccount){
+    const proj = state.projects.find(p=>p.id===state.ui.viewedProject);
+    const acc = proj?.accounts.find(a=>a.id===state.ui.viewedAccount);
+    UI.btnBack.style.display = 'flex';
+    UI.brandMark.style.display = 'none';
+    UI.topTitle.textContent = acc ? acc.name : 'الحساب';
+    UI.topSub.textContent = proj ? proj.name : '';
+    UI.optionsBtn.style.display = 'none';
+  } else {
+    UI.btnBack.style.display = 'none';
+    UI.brandMark.style.display = 'flex';
+    UI.topTitle.textContent = 'خزائني';
+    const accCount = state.projects.reduce((sum, p) => sum + p.accounts.length, 0);
+    UI.topSub.textContent = state.projects.length ? `${state.projects.length} مشاريع · ${accCount} حسابات` : 'لا مشاريع بعد';
+    UI.optionsBtn.style.display = 'flex';
+  }
+}
+UI.btnBack.addEventListener('click', navigateHome);
+
+/* ============================================================
+   HOME VIEW (Tabs + Accounts)
+============================================================ */
+function renderTabs(){
+  UI.tabs.innerHTML = '';
+  // All Tab
+  const allTab = document.createElement('button');
+  allTab.className = 'tab' + (state.activeProjectId === 'all' ? ' active' : '');
+  allTab.innerHTML = `<span class="dot"></span><span class="tab-text">الكل</span>`;
+  allTab.addEventListener('click', ()=>{
+    if(state.activeProjectId !== 'all'){ state.activeProjectId = 'all'; persist(); renderAll(); }
+  });
+  UI.tabs.appendChild(allTab);
+
+  // Project Tabs
+  state.projects.forEach(p=>{
+    const tab = document.createElement('button');
+    tab.className = 'tab' + (p.id === state.activeProjectId ? ' active' : '');
+    tab.innerHTML = `<span class="dot"></span><span class="tab-text" title="${escapeHTML(p.name)}">${escapeHTML(p.name)}</span>`;
+    tab.addEventListener('click', ()=>{
+      if(state.activeProjectId !== p.id){ state.activeProjectId = p.id; persist(); renderAll(); }
+    });
+    bindLongPress(tab, (x,y)=> openProjectContextMenu(p, x, y));
+    UI.tabs.appendChild(tab);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'tab-add'; addBtn.innerHTML = ICON.plus;
+  addBtn.addEventListener('click', openAddProjectSheet);
+  UI.tabs.appendChild(addBtn);
+}
+
+function renderHomeContent(){
+  if(state.projects.length===0){
+    UI.content.innerHTML = `<div class="empty"><div class="empty-glyph">${ICON.vault}</div><h3>ابدأ بإنشاء أول مشروع</h3><p>كل مشروع يمثل خزانة لبياناتك وحساباتك.</p><button class="btn-primary" id="emptyAddProject">${ICON.plus}<span>إضافة مشروع</span></button></div>`;
+    document.getElementById('emptyAddProject').addEventListener('click', openAddProjectSheet);
+    return;
+  }
+
+  const query = state.searchQuery.toLowerCase();
+  let targetProjects = state.activeProjectId === 'all' ? state.projects : state.projects.filter(p=>p.id===state.activeProjectId);
+
+  const grid = document.createElement('div'); grid.className = 'cards-grid';
+  let matchCount = 0;
+
+  targetProjects.forEach(proj => {
+    proj.accounts.forEach(acc => {
+      // Deep search: Project name + Account name + all field labels/values
+      const matched = matchQuery(query, proj.name, acc.name, ...acc.fields.map(f=>f.label+' '+f.value));
+      if(!matched) return;
+      matchCount++;
+
+      const el = document.createElement('div'); el.className = 'acc-card';
+      const fCount = acc.fields.length;
+      el.innerHTML = `
+        <div class="acc-info">
+          <div class="acc-ic">${ICON.folder}</div>
+          <div class="acc-text">
+            <h3>${escapeHTML(acc.name)}</h3>
+            <p>${fCount} بطاقة بيانات ${state.activeProjectId==='all' ? `<span class="badge-proj">${escapeHTML(proj.name)}</span>` : ''}</p>
+          </div>
+        </div>
+        <div class="acc-arrow">${ICON.chevronL}</div>
+      `;
+      el.addEventListener('click', ()=> navigateToAccount(proj.id, acc.id));
+      bindLongPress(el, (x,y)=> openAccountContextMenu(proj, acc, x, y));
+      grid.appendChild(el);
+    });
+  });
+
+  if(matchCount === 0){
+    if(query){
+      UI.content.innerHTML = `<div class="empty"><div class="empty-glyph">${ICON.search || ICON.vault}</div><h3>لا توجد نتائج</h3><p>لم نجد أي تطابق لبحثك.</p></div>`;
+    } else {
+      UI.content.innerHTML = `<div class="empty"><div class="empty-glyph">${ICON.folder}</div><h3>لا توجد حسابات هنا</h3><p>أضف حساباً جديداً للبدء في حفظ بياناته.</p><button class="btn-primary" id="emptyAddAcc">${ICON.plus}<span>إضافة حساب</span></button></div>`;
+      document.getElementById('emptyAddAcc').addEventListener('click', openAddAccountSheet);
+    }
+  } else {
+    UI.content.innerHTML = '';
+    UI.content.appendChild(grid);
+  }
+}
+
+/* ============================================================
+   ACCOUNT VIEW (Fields)
+============================================================ */
+function renderAccountContent(){
+  const proj = state.projects.find(p=>p.id===state.ui.viewedProject);
+  const acc = proj?.accounts.find(a=>a.id===state.ui.viewedAccount);
+  if(!proj || !acc){ navigateHome(); return; }
+
+  if(acc.fields.length===0){
+    UI.content.innerHTML = `<div class="empty"><div class="empty-glyph">${ICON.vault}</div><h3>الحساب فارغ</h3><p>أضف بيانات مثل كلمة السر، مفتاح الـ API، أو الروابط.</p><button class="btn-primary" id="emptyAddField">${ICON.plus}<span>إضافة بيانات</span></button></div>`;
+    document.getElementById('emptyAddField').addEventListener('click', ()=>openAddFieldSheet(proj, acc));
+    return;
+  }
+
+  const grid = document.createElement('div'); grid.className = 'cards-grid';
+  acc.fields.forEach(field => {
+    const el = document.createElement('div'); el.className='card';
+    const valWrap = document.createElement('div'); valWrap.className = 'card-value' + (field.sensitive ? '' : ' plain');
+    valWrap.textContent = (field.sensitive && !field._revealed) ? maskValue(field.value) : (field.value || '—');
+
+    el.innerHTML = `
+      <div class="card-top">
+        <div class="card-label"><span class="tag-dot"></span>${escapeHTML(field.label)}</div>
+        <button class="card-more" data-more aria-label="خيارات">${ICON.edit.replace('<svg','<svg style="width:15px;height:15px"')}</button>
+      </div>
+    `;
+    el.querySelector('.card-top').insertAdjacentElement('afterend', valWrap);
+
+    const actions = document.createElement('div'); actions.className='card-actions';
+    if(field.sensitive){
+      const eyeBtn = document.createElement('button'); eyeBtn.className='chip-btn';
+      eyeBtn.innerHTML = (field._revealed?ICON.eyeOff:ICON.eye) + `<span>${field._revealed?'إخفاء':'إظهار'}</span>`;
+      eyeBtn.addEventListener('click', ()=>{ field._revealed = !field._revealed; renderAccountContent(); });
+      actions.appendChild(eyeBtn);
+    }
+    const copyBtn = document.createElement('button'); copyBtn.className='chip-btn';
+    copyBtn.innerHTML = ICON.copy + '<span>نسخ</span>';
+    copyBtn.addEventListener('click', async ()=>{
+      if(await copyToClipboard(field.value)){
+        copyBtn.classList.add('copied'); copyBtn.innerHTML = ICON.check + '<span>تم النسخ</span>';
+        toast('تم نسخ «'+field.label+'» ✓','success');
+        setTimeout(()=>{ copyBtn.className='chip-btn'; copyBtn.innerHTML=ICON.copy+'<span>نسخ</span>'; }, 1400);
+      }
+    });
+    actions.appendChild(copyBtn); el.appendChild(actions);
+
+    el.querySelector('[data-more]').addEventListener('click', (e)=>{
+      const r = e.currentTarget.getBoundingClientRect(); openFieldContextMenu(proj, acc, field, r.left+r.width/2, r.bottom+6);
+    });
+    bindLongPress(el, (x,y)=> openFieldContextMenu(proj, acc, field, x, y));
+    grid.appendChild(el);
+  });
+  UI.content.innerHTML = ''; UI.content.appendChild(grid);
+}
+
+/* ============================================================
+   SEARCH LOGIC
+============================================================ */
+UI.searchInput.addEventListener('input', (e)=>{
+  state.searchQuery = e.target.value;
+  UI.searchClear.classList.toggle('show', !!state.searchQuery);
+  renderHomeContent();
+});
+UI.searchClear.addEventListener('click', ()=>{
+  state.searchQuery = ''; UI.searchInput.value = '';
+  UI.searchClear.classList.remove('show'); UI.searchInput.focus();
+  renderHomeContent();
+});
+
+/* ============================================================
+   SMART FAB
+============================================================ */
+UI.fab.addEventListener('click', ()=>{
+  if(state.ui.mode === 'home'){
+    if(state.projects.length===0) openAddProjectSheet();
+    else openAddAccountSheet();
+  } else {
+    const proj = state.projects.find(p=>p.id===state.ui.viewedProject);
+    const acc = proj?.accounts.find(a=>a.id===state.ui.viewedAccount);
+    if(proj && acc) openAddFieldSheet(proj, acc);
+  }
+});
+
+/* ============================================================
+   MANAGEMENT (Projects)
+============================================================ */
+function openAddProjectSheet(){
+  openSheet({
+    id:'add-project-'+uid(), title:'مشروع جديد', subtitle:'أضف اسمًا لتنظيم بياناتك',
+    bodyHTML:`<div class="field"><label>اسم المشروع</label><input type="text" id="pName" placeholder="مثال: Supabase" maxlength="60" autocomplete="off"></div>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-cancel>إلغاء</button><button class="btn btn-accent" id="pSave" disabled>إضافة</button></div>`,
+    onMount:(sheet, close)=>{
+      const inp = sheet.querySelector('#pName'), save = sheet.querySelector('#pSave');
+      setTimeout(()=>inp.focus(), 260);
+      inp.addEventListener('input', ()=> save.disabled = !inp.value.trim());
+      inp.addEventListener('keydown', e=>{ if(e.key==='Enter' && inp.value.trim()) doSave(); });
+      sheet.querySelector('[data-cancel]').addEventListener('click', close); save.addEventListener('click', doSave);
+      function doSave(){
+        const name = inp.value.trim(); if(!name) return;
+        const proj = {id:uid(), name, createdAt:Date.now(), accounts:[]};
+        state.projects.push(proj); state.activeProjectId = proj.id;
+        persist(); close(); renderAll(); toast('تم إنشاء «'+name+'» ✓','success');
+      }
+    }
+  });
+}
+function openEditProjectSheet(p){
+  openSheet({
+    id:'edit-proj-'+uid(), title:'تعديل المشروع',
+    bodyHTML:`<div class="field"><label>الاسم</label><input type="text" id="pName" value="${escapeHTML(p.name)}" maxlength="60" autocomplete="off"></div>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-cancel>إلغاء</button><button class="btn btn-accent" id="pSave">حفظ</button></div>`,
+    onMount:(sheet, close)=>{
+      const inp = sheet.querySelector('#pName'); setTimeout(()=>{ inp.focus(); inp.select(); }, 260);
+      inp.addEventListener('keydown', e=>{ if(e.key==='Enter') doSave(); });
+      sheet.querySelector('[data-cancel]').addEventListener('click', close); sheet.querySelector('#pSave').addEventListener('click', doSave);
+      function doSave(){
+        const name = inp.value.trim(); if(!name) return; p.name = name;
+        persist(); close(); renderAll(); toast('تم التعديل ✓','success');
+      }
+    }
+  });
+}
+function confirmDeleteProject(p){
+  openConfirm({
+    title:'حذف المشروع؟', message:`سيتم حذف «${escapeHTML(p.name)}» وجميع الحسابات والبيانات بداخله نهائيًا.`, confirmLabel:'حذف', danger:true,
+    onConfirm:()=>{
+      state.projects = state.projects.filter(x=>x.id!==p.id);
+      if(state.activeProjectId===p.id) state.activeProjectId = 'all';
+      persist(); renderAll(); toast('تم حذف المشروع','success');
+    }
+  });
+}
+function openProjectContextMenu(p, x, y){
+  openContextMenu(x, y, [
+    {act:'rename', label:'تعديل اسم المشروع', icon:ICON.edit, run:()=>openEditProjectSheet(p)},
+    {sep:true}, {act:'delete', label:'حذف المشروع', icon:ICON.trash, danger:true, run:()=>confirmDeleteProject(p)}
+  ]);
+}
+
+/* ============================================================
+   MANAGEMENT (Accounts)
+============================================================ */
+function openAddAccountSheet(){
+  // If in 'all' view, user must select a project
+  const showProjSelect = state.activeProjectId === 'all' && state.projects.length > 0;
+  let selectedProjId = state.projects.length ? state.projects[0].id : null;
+  const projChips = state.projects.map(p=>`<button class="proj-chip ${p.id===selectedProjId?'active':''}" data-id="${p.id}">${escapeHTML(p.name)}</button>`).join('');
+
+  openSheet({
+    id:'add-acc-'+uid(), title:'حساب جديد',
+    bodyHTML:`
+      ${showProjSelect ? `<div class="field"><label>المشروع</label><div class="proj-chips" id="aProjChips">${projChips}</div></div>` : ''}
+      <div class="field"><label>اسم الحساب / الإيميل</label><input type="text" id="aName" placeholder="مثال: ahmad@gmail.com" maxlength="80" autocomplete="off" dir="ltr" style="text-align:left"></div>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-cancel>إلغاء</button><button class="btn btn-accent" id="aSave" disabled>إضافة</button></div>`,
+    onMount:(sheet, close)=>{
+      const inp = sheet.querySelector('#aName'), save = sheet.querySelector('#aSave');
+      
+      if(showProjSelect){
+        const chips = sheet.querySelectorAll('.proj-chip');
+        chips.forEach(c => {
+          c.addEventListener('click', ()=>{
+            chips.forEach(x=>x.classList.remove('active'));
+            c.classList.add('active');
+            selectedProjId = c.getAttribute('data-id');
+          });
+        });
+      }
+
+      setTimeout(()=>inp.focus(), 260);
+      inp.addEventListener('input', ()=> save.disabled = !inp.value.trim());
+      inp.addEventListener('keydown', e=>{ if(e.key==='Enter' && inp.value.trim()) doSave(); });
+      sheet.querySelector('[data-cancel]').addEventListener('click', close); save.addEventListener('click', doSave);
+      
+      function doSave(){
+        const name = inp.value.trim(); if(!name) return;
+        const targetProjId = showProjSelect ? selectedProjId : state.activeProjectId;
+        const proj = state.projects.find(p=>p.id===targetProjId);
+        if(!proj) return;
+        proj.accounts.push({id:uid(), name, createdAt:Date.now(), fields:[]});
+        persist(); close(); renderAll(); toast('تم إضافة الحساب ✓','success');
+      }
+    }
+  });
+}
+function openEditAccountSheet(proj, acc){
+  openSheet({
+    id:'edit-acc-'+uid(), title:'تعديل الحساب',
+    bodyHTML:`<div class="field"><label>الاسم</label><input type="text" id="aName" value="${escapeHTML(acc.name)}" maxlength="80" autocomplete="off" dir="ltr" style="text-align:left"></div>
+      <div class="sheet-actions"><button class="btn btn-ghost" data-cancel>إلغاء</button><button class="btn btn-accent" id="aSave">حفظ</button></div>`,
+    onMount:(sheet, close)=>{
+      const inp = sheet.querySelector('#aName'); setTimeout(()=>{ inp.focus(); inp.select(); }, 260);
+      inp.addEventListener('keydown', e=>{ if(e.key==='Enter') doSave(); });
+      sheet.querySelector('[data-cancel]').addEventListener('click', close); sheet.querySelector('#aSave').addEventListener('click', doSave);
+      function doSave(){
+        const name = inp.value.trim(); if(!name) return; acc.name = name;
+        persist(); close(); renderAll(); toast('تم التعديل ✓','success');
+      }
+    }
+  });
+}
+function confirmDeleteAccount(proj, acc){
+  openConfirm({
+    title:'حذف الحساب؟', message:`سيتم حذف «${escapeHTML(acc.name)}» وجميع بطاقاته نهائيًا.`, confirmLabel:'حذف', danger:true,
+    onConfirm:()=>{
+      proj.accounts = proj.accounts.filter(x=>x.id!==acc.id);
+      persist(); renderAll(); toast('تم حذف الحساب','success');
+    }
+  });
+}
+function openAccountContextMenu(proj, acc, x, y){
+  openContextMenu(x, y, [
+    {act:'edit', label:'تعديل', icon:ICON.edit, run:()=>openEditAccountSheet(proj, acc)},
+    {sep:true}, {act:'delete', label:'حذف', icon:ICON.trash, danger:true, run:()=>confirmDeleteAccount(proj, acc)}
+  ]);
+}
+
+/* ============================================================
+   MANAGEMENT (Fields)
+============================================================ */
+function fieldFormHTML(ext){
+  return `
+    <div class="field"><label>اسم البيانات</label><input type="text" id="fLabel" placeholder="مثال: API Key" value="${ext?escapeHTML(ext.label):''}" maxlength="60" autocomplete="off"></div>
+    <div class="field"><label>القيمة</label><textarea id="fValue" placeholder="القيمة الكاملة...">${ext?escapeHTML(ext.value):''}</textarea></div>
+    <div class="switch-row"><div class="label-block"><strong>بيانات حساسة</strong><span>إخفاء القيمة تلقائيًا خلف نقاط</span></div><div class="switch ${(!ext||ext.sensitive)?'on':''}" id="fSens"><div class="knob"></div></div></div>
+    <div class="sheet-actions"><button class="btn btn-ghost" data-cancel>إلغاء</button><button class="btn btn-accent" id="fSave" ${ext?'':'disabled'}>${ext?'حفظ':'إضافة'}</button></div>`;
+}
+function wireFieldForm(sheet, close, proj, acc, ext){
+  const lInp = sheet.querySelector('#fLabel'), vInp = sheet.querySelector('#fValue'), sw = sheet.querySelector('#fSens'), save = sheet.querySelector('#fSave');
+  let sens = ext ? ext.sensitive : true;
+  setTimeout(()=>lInp.focus(), 260);
+  function check(){ save.disabled = !(lInp.value.trim() && vInp.value.trim()); }
+  lInp.addEventListener('input', check); vInp.addEventListener('input', check);
+  sw.addEventListener('click', ()=>{ sens = !sens; sw.classList.toggle('on', sens); });
+  sheet.querySelector('[data-cancel]').addEventListener('click', close);
+  save.addEventListener('click', ()=>{
+    const label = lInp.value.trim(), value = vInp.value.trim(); if(!label || !value) return;
+    if(ext){ ext.label=label; ext.value=value; ext.sensitive=sens; ext.updatedAt=Date.now(); }
+    else acc.fields.push({id:uid(), label, value, sensitive:sens, createdAt:Date.now(), updatedAt:Date.now(), _revealed:false});
+    persist(); close(); renderAll(); toast(ext?'تم التعديل ✓':'تمت الإضافة ✓','success');
+  });
+}
+function openAddFieldSheet(proj, acc){
+  openSheet({ id:'add-f-'+uid(), title:'بيانات جديدة', subtitle:escapeHTML(acc.name), bodyHTML: fieldFormHTML(null), onMount:(s,c)=>wireFieldForm(s,c,proj,acc,null) });
+}
+function openEditFieldSheet(proj, acc, f){
+  openSheet({ id:'edit-f-'+uid(), title:'تعديل البيانات', subtitle:escapeHTML(f.label), bodyHTML: fieldFormHTML(f), onMount:(s,c)=>wireFieldForm(s,c,proj,acc,f) });
+}
+function confirmDeleteField(proj, acc, f){
+  openConfirm({
+    title:'حذف البيانات؟', message:`سيتم حذف «${escapeHTML(f.label)}» نهائيًا.`, confirmLabel:'حذف', danger:true,
+    onConfirm:()=>{ acc.fields = acc.fields.filter(x=>x.id!==f.id); persist(); renderAll(); toast('تم الحذف','success'); }
+  });
+}
+function openFieldContextMenu(proj, acc, f, x, y){
+  openContextMenu(x, y, [
+    {act:'copy', label:'نسخ القيمة', icon:ICON.copy, run:async ()=>{ if(await copyToClipboard(f.value)) toast('تم نسخ «'+f.label+'» ✓','success'); }},
+    {act:'edit', label:'تعديل', icon:ICON.edit, run:()=>openEditFieldSheet(proj, acc, f)},
+    {sep:true}, {act:'delete', label:'حذف', icon:ICON.trash, danger:true, run:()=>confirmDeleteField(proj, acc, f)}
+  ]);
+}
+
+/* ============================================================
+   OPTIONS & EXPORT/IMPORT
+============================================================ */
+UI.optionsBtn.addEventListener('click', ()=>{
+  openSheet({
+    id:'opts', title:'الخيارات',
+    bodyHTML:`<div class="menu-list"><button class="menu-item" data-act="export"><span class="m-ic">${ICON.download}</span><span class="m-text"><strong>تصدير نسخة JSON</strong><span>حفظ جميع بياناتك في ملف</span></span></button><button class="menu-item" data-act="import"><span class="m-ic">${ICON.upload}</span><span class="m-text"><strong>استيراد نسخة JSON</strong><span>استعادة بيانات سابقة</span></span></button><button class="menu-item danger" data-act="wipe"><span class="m-ic">${ICON.trash}</span><span class="m-text"><strong>حذف جميع البيانات</strong><span>إزالة كل شيء نهائيًا</span></span></button></div>`,
+    onMount:(sheet, close)=>{
+      sheet.querySelector('[data-act="export"]').addEventListener('click', ()=>{ close(); setTimeout(exportJSON,180); });
+      sheet.querySelector('[data-act="import"]').addEventListener('click', ()=>{ close(); document.getElementById('importInput').click(); });
+      sheet.querySelector('[data-act="wipe"]').addEventListener('click', ()=>{ close(); setTimeout(confirmWipeAll,180); });
+    }
+  });
+});
+
+function exportJSON(){
+  if(state.projects.length===0){ toast('لا توجد بيانات','error'); return; }
+  const data = { app:'vault-manager', version:2, exportedAt:new Date().toISOString(), projects: state.projects.map(p=>({ id:p.id, name:p.name, createdAt:p.createdAt, accounts: p.accounts.map(a=>({ id:a.id, name:a.name, createdAt:a.createdAt, fields: a.fields.map(f=>({id:f.id, label:f.label, value:f.value, sensitive:f.sensitive, createdAt:f.createdAt, updatedAt:f.updatedAt})) })) })) };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)], {type:'application/json'}));
+  const a = document.createElement('a'); a.href = url; a.download = `vault-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 2000); toast('تم التصدير ✓','success');
+}
+
+document.getElementById('importInput').addEventListener('change', (e)=>{
+  const file = e.target.files?.[0]; if(!file) return; e.target.value='';
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      if(!parsed?.projects) throw new Error();
+      // Auto-migrate imported old V1 data if needed
+      const cleanProjects = parsed.projects.map(p=>{
+        let accounts = [];
+        if(p.accounts) accounts = p.accounts.map(a=>({ id:a.id||uid(), name:a.name, createdAt:a.createdAt||Date.now(), fields:(a.fields||[]).map(f=>({...f, id:f.id||uid(), _revealed:false})) }));
+        else if(p.cards) accounts = [{ id:uid(), name:'حسابات مستوردة', createdAt:Date.now(), fields:p.cards.map(f=>({...f, id:f.id||uid(), _revealed:false})) }];
+        return { id:p.id||uid(), name:p.name, createdAt:p.createdAt||Date.now(), accounts };
+      });
+      openConfirm({
+        title:'استبدال البيانات؟', message:'سيتم استبدال بياناتك الحالية بمحتوى الملف. يُنصح بالتصدير أولاً.', confirmLabel:'استيراد واستبدال', danger:true,
+        onConfirm:()=>{ state.projects = cleanProjects; state.activeProjectId = 'all'; persist(); renderAll(); toast('تم الاستيراد ✓','success'); }
+      });
+    }catch(err){ toast('ملف غير صالح','error'); }
+  };
+  reader.readAsText(file);
+});
+
+function confirmWipeAll(){
+  openConfirm({
+    title:'حذف كل شيء؟', message:'لا يمكن التراجع عن هذا الإجراء.', confirmLabel:'حذف نهائي', danger:true,
+    onConfirm:()=>{ state = defaultState(); persist(); renderAll(); toast('تم حذف البيانات','success'); }
+  });
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+(async function init(){
+  await loadState();
+  if(!history.state) history.replaceState({root:true}, '');
+  renderAll();
+})();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>دفتر الهاتف الاحترافي</title>
+<style>
+/* =========================================================
+   1) المتغيرات العامة (الثيمات)
+   ========================================================= */
+:root{
+  --bg:#eaf4fb;
+  --bg-2:#dcedf7;
+  --surface:#ffffff;
+  --surface-2:#f4f9fc;
+  --text:#0b2942;
+  --text-soft:#5b7a90;
+  --accent:#0f4c75;
+  --accent-2:#3282b8;
+  --border:#d7e6ee;
+  --danger:#c0392b;
+  --shadow-color:rgba(15,76,117,.20);
+  --radius-lg:22px;
+  --radius-md:16px;
+  --radius-sm:10px;
+  --btn-bg:#0b1620;
+  --btn-text:#ffffff;
+  --font: "Segoe UI", "Tahoma", "Arial", sans-serif;
+}
+body.neon{
+  --bg:#04050a;
+  --bg-2:#070912;
+  --surface:#0d0f18;
+  --surface-2:#11141f;
+  --text:#eafcff;
+  --text-soft:#7fa0ab;
+  --accent:#00fff2;
+  --accent-2:#ff2ea6;
+  --border:#1c2434;
+  --danger:#ff4d6d;
+  --shadow-color:rgba(0,255,242,.35);
+  --btn-bg:#050608;
+  --btn-text:#eafcff;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--font);
+  background:linear-gradient(160deg,var(--bg),var(--bg-2));
+  color:var(--text);
+  min-height:100vh;
+  transition:background .4s ease,color .4s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+::selection{ background:var(--accent); color:var(--surface);}
+::-webkit-scrollbar{width:10px; height:10px;}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+
+button{ font-family:inherit; cursor:pointer; }
+input{ font-family:inherit; }
+
+/* =========================================================
+   2) الحاوية الرئيسية
+   ========================================================= */
+.app{
+  max-width:900px;
+  margin:0 auto;
+  padding:22px 22px 60px;
+  min-height:100vh;
+}
+
+/* ---------- الهيدر ---------- */
+.app-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:22px;
+}
+.app-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.app-title .logo-badge{
+  width:46px; height:46px;
+  border-radius:14px;
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 18px var(--shadow-color);
+}
+.app-title h1{
+  font-size:20px;
+  letter-spacing:.3px;
+}
+.app-title p{
+  font-size:12px;
+  color:var(--text-soft);
+  margin-top:2px;
+}
+
+/* زر أيقونة زجاجي (glassmorphism) */
+.icon-btn{
+  position:relative;
+  width:46px; height:46px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.10);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text);
+  box-shadow:0 4px 16px var(--shadow-color);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.icon-btn:hover{ transform:translateY(-2px) scale(1.05); }
+.icon-btn:active{ transform:scale(.92); }
+.icon-btn.pulse-on-tap:active{ animation:iconPulse .35s ease; }
+@keyframes iconPulse{
+  0%{ box-shadow:0 0 0 0 var(--shadow-color); }
+  70%{ box-shadow:0 0 0 14px transparent; }
+  100%{ box-shadow:0 0 0 0 transparent; }
+}
+.icon-btn svg{ width:20px; height:20px; }
+
+/* ---------- بطاقة الإدخال ---------- */
+.entry-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:20px;
+  box-shadow:0 10px 30px var(--shadow-color);
+  margin-bottom:20px;
+}
+.entry-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:14px;
+}
+.address-field {
+  grid-column: 1 / -1;
+}
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.field label{
+  font-size:12px;
+  color:var(--text-soft);
+  padding:0 4px;
+}
+.field input, .field textarea{
+  border-radius:var(--radius-md);
+  border:1.5px solid var(--border);
+  background:var(--surface-2);
+  color:var(--text);
+  font-size:15px;
+  outline:none;
+  transition:border-color .2s ease, box-shadow .2s ease;
+  font-family:inherit;
+}
+.field input{
+  height:48px;
+  padding:0 16px;
+}
+.field textarea{
+  min-height:90px;
+  padding:12px 16px;
+  resize:vertical;
+}
+.field input:focus, .field textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px var(--shadow-color);
+}
+
+/* ---------- الأزرار الأساسية (سادة أبيض/أسود مع نبض) ---------- */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  height:48px;
+  padding:0 22px;
+  border:none;
+  border-radius:var(--radius-md);
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  font-size:15px;
+  font-weight:600;
+  box-shadow:0 0 0 0 var(--shadow-color);
+  transition:transform .15s ease;
+  animation:btnBreath 2.6s ease-in-out infinite;
+}
+.btn:hover{ transform:translateY(-2px); }
+.btn:active{ transform:scale(.96); }
+.btn.btn-outline{
+  background:transparent;
+  color:var(--text);
+  border:1.5px solid var(--btn-bg);
+  animation:none;
+  box-shadow:none;
+}
+.btn.btn-danger{
+  background:var(--danger);
+  color:#fff;
+  animation:none;
+}
+.btn.btn-block{ width:100%; }
+.btn svg{ width:18px; height:18px; }
+
+@keyframes btnBreath{
+  0%,100%{ box-shadow:0 0 0 0 var(--shadow-color); }
+  50%{ box-shadow:0 0 14px 4px var(--shadow-color); }
+}
+
+/* ---------- شريط البحث ---------- */
+.search-bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:0 16px;
+  height:52px;
+  margin-bottom:16px;
+  box-shadow:0 6px 18px var(--shadow-color);
+}
+.search-bar svg{ width:20px; height:20px; color:var(--text-soft); flex-shrink:0; }
+.search-bar input{
+  flex:1;
+  border:none;
+  outline:none;
+  background:transparent;
+  color:var(--text);
+  font-size:15px;
+  height:100%;
+}
+
+/* ---------- شريط التصنيفات (الخانات) ---------- */
+.category-bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  overflow-x:auto;
+  padding-bottom:10px;
+  margin-bottom:18px;
+  scrollbar-width:thin;
+}
+.category-chip{
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  height:40px;
+  padding:0 18px;
+  border-radius:999px;
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  color:var(--text-soft);
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
+  transition:all .2s ease;
+}
+.category-chip .count{
+  background:var(--surface-2);
+  border-radius:999px;
+  padding:1px 8px;
+  font-size:11px;
+}
+.category-chip.active{
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  border-color:var(--btn-bg);
+  box-shadow:0 4px 14px var(--shadow-color);
+}
+.category-chip.active .count{ background:rgba(255,255,255,.18); color:var(--btn-text); }
+.add-category-chip{
+  flex-shrink:0;
+  width:40px; height:40px;
+  border-radius:50%;
+  background:rgba(255,255,255,.10);
+  backdrop-filter:blur(10px);
+  border:1px dashed var(--accent);
+  color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.add-category-chip svg{ width:18px; height:18px; }
+
+/* ---------- قائمة جهات الاتصال ---------- */
+.list-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+  color:var(--text-soft);
+  font-size:13px;
+}
+.contacts-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.contact-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:14px 16px;
+  box-shadow:0 6px 16px var(--shadow-color);
+  transition:transform .15s ease;
+}
+.contact-card:hover{ transform:translateY(-2px); }
+.contact-avatar{
+  width:46px; height:46px;
+  border-radius:50%;
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  font-weight:700;
+  font-size:16px;
+}
+.contact-info{ flex:1; min-width:0; }
+.contact-info .name{ font-size:15px; font-weight:700; color:var(--accent); cursor:pointer; text-decoration:underline; text-underline-offset:4px; transition:color 0.2s; }
+.contact-info .name:hover{ color:var(--accent-2); }
+.contact-info .address{ font-size:13px; color:var(--text); margin-top:4px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.details-box{ background:var(--surface-2); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border); }
+.details-row{ margin-bottom:12px; display:flex; flex-direction:column; gap:4px; }
+.details-row:last-child{ margin-bottom:0; }
+.details-label{ font-size:12px; color:var(--text-soft); font-weight:700; }
+.details-value{ font-size:15px; color:var(--text); font-weight:600; white-space:pre-wrap; }
+.contact-info .meta{
+  display:flex; gap:10px; align-items:center;
+  font-size:12.5px; color:var(--text-soft);
+  margin-top:3px;
+  flex-wrap:wrap;
+}
+.contact-info .phone{ direction:ltr; unicode-bidi:embed; font-weight:600; color:var(--accent-2); }
+.badge-cat{
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:2px 10px;
+  font-size:11px;
+}
+.contact-actions{
+  display:flex;
+  gap:8px;
+  flex-shrink:0;
+}
+.action-btn{
+  width:38px; height:38px;
+  border-radius:50%;
+  background:rgba(255,255,255,.10);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.25);
+  color:var(--text);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .15s ease, color .15s ease;
+}
+.action-btn:hover{ transform:scale(1.1); }
+.action-btn:active{ animation:iconPulse .35s ease; }
+.action-btn svg{ width:16px; height:16px; }
+.action-btn.danger:hover{ color:var(--danger); }
+
+.empty-state{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text-soft);
+}
+.empty-state svg{ width:70px; height:70px; margin-bottom:14px; opacity:.5; }
+.empty-state h3{ color:var(--text); margin-bottom:6px; }
+
+/* =========================================================
+   3) النوافذ المنبثقة (Modals)
+   ========================================================= */
+.overlay{
+  position:fixed; inset:0;
+  background:rgba(0,10,20,.55);
+  backdrop-filter:blur(4px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  padding:16px;
+  opacity:0;
+  transition:opacity .2s ease;
+}
+.overlay.active{ display:flex; opacity:1; }
+.modal{
+  width:100%;
+  max-width:420px;
+  max-height:88vh;
+  overflow-y:auto;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  transform:translateY(16px) scale(.97);
+  transition:transform .22s ease;
+}
+.overlay.active .modal{ transform:translateY(0) scale(1); }
+.modal-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+.modal-header h2{ font-size:17px; }
+.modal-close{
+  width:34px; height:34px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-soft);
+}
+.modal-close svg{ width:15px; height:15px; }
+.modal-body p{ color:var(--text-soft); font-size:14px; line-height:1.9; }
+.modal-body .field{ margin-bottom:12px; }
+.modal-footer{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+.modal-footer .btn{ flex:1; }
+
+.option-list{ display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto; }
+.option-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius:var(--radius-sm);
+  border:1.5px solid var(--border);
+  background:var(--surface-2);
+  color:var(--text);
+  font-size:14px;
+  transition:all .15s ease;
+}
+.option-item.selected{
+  border-color:var(--accent);
+  background:var(--shadow-color);
+  font-weight:700;
+}
+.option-item .dot{
+  width:16px; height:16px;
+  border-radius:50%;
+  border:2px solid var(--text-soft);
+  flex-shrink:0;
+  position:relative;
+}
+.option-item.selected .dot{ border-color:var(--accent); }
+.option-item.selected .dot::after{
+  content:"";
+  position:absolute; inset:2.5px;
+  border-radius:50%;
+  background:var(--accent);
+}
+
+/* قائمة الإعدادات (Settings sheet) */
+.settings-list{ display:flex; flex-direction:column; gap:10px; }
+.settings-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:13px 14px;
+  border-radius:var(--radius-sm);
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-size:14px;
+  font-weight:600;
+  text-align:right;
+  transition:transform .15s ease;
+}
+.settings-item:hover{ transform:translateX(-3px); }
+.settings-item svg{ width:19px; height:19px; flex-shrink:0; color:var(--accent-2); }
+.settings-item.danger{ color:var(--danger); }
+.settings-item.danger svg{ color:var(--danger); }
+
+.file-drop{
+  border:2px dashed var(--border);
+  border-radius:var(--radius-md);
+  padding:26px 14px;
+  text-align:center;
+  color:var(--text-soft);
+  font-size:13px;
+  cursor:pointer;
+}
+.file-drop input{ display:none; }
+
+.hint{ font-size:12px; color:var(--text-soft); margin-top:8px; }
+
+/* toast صغير للتأكيدات السريعة */
+.toast{
+  position:fixed;
+  bottom:24px;
+  right:50%;
+  transform:translateX(50%) translateY(20px);
+  background:var(--btn-bg);
+  color:var(--btn-text);
+  padding:12px 22px;
+  border-radius:999px;
+  font-size:13px;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+  opacity:0;
+  pointer-events:none;
+  transition:all .3s ease;
+  z-index:1200;
+  display:flex; align-items:center; gap:8px;
+}
+.toast.show{ opacity:1; transform:translateX(50%) translateY(0); }
+
+/* =========================================================
+   4) التجاوب (Responsive)
+   ========================================================= */
+@media (max-width:640px){
+  .app{ padding:16px 14px 50px; }
+  .entry-grid{ grid-template-columns:1fr; }
+  .contact-actions{ gap:6px; }
+}
+@media (hover:none){
+  .contact-card:hover, .icon-btn:hover, .btn:hover{ transform:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ الهيدر ============ -->
+  <header class="app-header">
+    <div class="app-title">
+      <div class="logo-badge">
+        <svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1L6.6 10.8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </div>
+      <div>
+        <h1>دفتر الهاتف</h1>
+        <p id="subtitleCount">0 جهة اتصال محفوظة</p>
+      </div>
+    </div>
+    <button class="icon-btn pulse-on-tap" id="settingsBtn" title="الإعدادات">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <!-- ============ بطاقة إدخال جهة اتصال ============ -->
+  <section class="entry-card">
+    <div class="entry-grid">
+      <div class="field">
+        <label for="nameInput">الاسم</label>
+        <input id="nameInput" type="text" placeholder="مثال: أحمد الخالد" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="phoneInput">رقم الهاتف</label>
+        <input id="phoneInput" type="tel" placeholder="مثال: 0912345678" autocomplete="off" dir="ltr" style="text-align:right;">
+      </div>
+      <div class="field address-field">
+        <label for="addressInput">العنوان</label>
+        <textarea id="addressInput" placeholder="مثال: بيروت، الشياح&#10;الشارع العام" autocomplete="off"></textarea>
+      </div>
+    </div>
+    <button class="btn btn-block" id="saveContactBtn">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      حفظ جهة الاتصال
+    </button>
+  </section>
+
+  <!-- ============ شريط البحث ============ -->
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <input id="searchInput" type="text" placeholder="ابحث بالاسم، الرقم، أو العنوان...">
+  </div>
+
+  <!-- ============ شريط الخانات (التصنيفات) ============ -->
+  <div class="category-bar" id="categoryBar"></div>
+
+  <!-- ============ قائمة جهات الاتصال ============ -->
+  <div class="list-meta">
+    <span id="listTitle">عام</span>
+    <span id="listCount">0 جهة</span>
+  </div>
+  <div class="contacts-list" id="contactsList"></div>
+
+</div>
+
+<!-- ================================================================
+     المودالات (Modals)
+     ================================================================ -->
+
+<!-- مودال عام للتنبيهات (Alert) -->
+<div class="overlay" id="modal-alert">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="alertTitle">تنبيه</h2>
+      <button class="modal-close" data-close="modal-alert">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body"><p id="alertMessage"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-block" data-close="modal-alert">حسناً</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال عام للتأكيد (Confirm) -->
+<div class="overlay" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="confirmTitle">تأكيد</h2>
+      <button class="modal-close" data-close="modal-confirm">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body"><p id="confirmMessage"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modal-confirm">إلغاء</button>
+      <button class="btn btn-danger" id="confirmActionBtn">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال إدخال نصي عام (Prompt: كلمة مرور / اسم خانة) -->
+<div class="overlay" id="modal-prompt">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="promptTitle">إدخال</h2>
+      <button class="modal-close" data-close="modal-prompt">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p id="promptMessage" style="margin-bottom:10px;"></p>
+      <div class="field">
+        <input id="promptInput" type="text" placeholder="">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modal-prompt">إلغاء</button>
+      <button class="btn" id="promptActionBtn">متابعة</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال اختيار خانة (عند الحفظ / النقل) -->
+<div class="overlay" id="modal-category-select">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="categorySelectTitle">اختر الخانة</h2>
+      <button class="modal-close" data-close="modal-category-select">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="option-list" id="categoryOptionList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modal-category-select">إلغاء</button>
+      <button class="btn" id="categorySelectConfirmBtn">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال تعديل جهة اتصال -->
+<div class="overlay" id="modal-edit-contact">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>تعديل جهة الاتصال</h2>
+      <button class="modal-close" data-close="modal-edit-contact">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>الاسم</label>
+        <input id="editNameInput" type="text">
+      </div>
+      <div class="field">
+        <label>رقم الهاتف</label>
+        <input id="editPhoneInput" type="tel" dir="ltr" style="text-align:right;">
+      </div>
+      <div class="field">
+        <label>العنوان</label>
+        <textarea id="editAddressInput"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modal-edit-contact">إلغاء</button>
+      <button class="btn" id="editSaveBtn">حفظ التعديل</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال تفاصيل جهة الاتصال -->
+<div class="overlay" id="modal-contact-details">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>بطاقة تعريف</h2>
+      <button class="modal-close" data-close="modal-contact-details">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="details-box">
+        <div class="details-row">
+          <span class="details-label">الاسم الكامل</span>
+          <span class="details-value" id="detailName"></span>
+        </div>
+        <div class="details-row">
+          <span class="details-label">العنوان</span>
+          <span class="details-value" id="detailAddress"></span>
+        </div>
+        <div class="details-row">
+          <span class="details-label">رقم الهاتف</span>
+          <span class="details-value" id="detailPhone" dir="ltr" style="text-align:right; font-weight:bold; color:var(--accent-2);"></span>
+        </div>
+        <div class="details-row">
+          <span class="details-label">الخانة</span>
+          <span class="details-value" id="detailCategory"></span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-block" data-close="modal-contact-details">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- مودال الإعدادات (القائمة الرئيسية) -->
+<div class="overlay" id="modal-settings">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>الإعدادات</h2>
+      <button class="modal-close" data-close="modal-settings">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-list">
+        <button class="settings-item" id="toggleNeonBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span id="toggleNeonLabel">تفعيل وضع النيون</span>
+        </button>
+        <button class="settings-item" id="exportBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>تصدير البيانات (JSON)</span>
+        </button>
+        <button class="settings-item" id="importBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 7V5a2 2 0 012-2h12a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>استيراد البيانات (JSON)</span>
+        </button>
+        <button class="settings-item" id="togglePasswordBtn">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 118 0v4" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span id="togglePasswordLabel">تعيين كلمة مرور</span>
+        </button>
+        <button class="settings-item danger" id="deleteAllBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-8 0v12a2 2 0 002 2h4a2 2 0 002-2V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>حذف جميع البيانات</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- مودال الاستيراد (اختيار ملف) -->
+<div class="overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>استيراد البيانات</h2>
+      <button class="modal-close" data-close="modal-import">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <label class="file-drop" id="fileDropLabel">
+        <input type="file" id="importFileInput" accept="application/json">
+        <span id="fileDropText">اضغط هنا لاختيار ملف JSON للاستيراد</span>
+      </label>
+      <p class="hint">سيتم دمج جهات الاتصال المستوردة مع البيانات الحالية دون حذف أي شيء.</p>
+    </div>
+  </div>
+</div>
+
+<!-- عنصر تصدير مخفي -->
+<a id="downloadAnchor" style="display:none;"></a>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   1) التخزين والحالة العامة (State + Storage)
+   ========================================================= */
+const STORAGE_KEY = "phoneBookProData_v1";
+
+function defaultData(){
+  return {
+    categories: ["عام"],
+    contacts: [],
+    settings: { neon:false, password:null }
+  };
+}
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultData();
+    const parsed = JSON.parse(raw);
+    if(!parsed.categories || !parsed.contacts || !parsed.settings) return defaultData();
+    return parsed;
+  }catch(e){
+    return defaultData();
+  }
+}
+
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+}
+
+let appData = loadData();
+let currentCategory = "الكل";
+let searchQuery = "";
+
+/* =========================================================
+   2) أدوات مساعدة عامة
+   ========================================================= */
+function uid(){
+  return "c_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
+}
+function normalizePhone(str){
+  return (str || "").replace(/[\s\-\(\)]/g,"");
+}
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(()=> t.classList.remove("show"), 2200);
+}
+
+/* =========================================================
+   3) نظام إدارة النوافذ المنبثقة (Modal Stack + زر الرجوع)
+   ========================================================= */
+let modalStack = [];
+
+function openModal(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add("active");
+  modalStack.push(id);
+  history.pushState({ appModal:id, depth:modalStack.length }, "");
+}
+
+function closeModal(id, skipHistoryBack){
+  const el = document.getElementById(id);
+  if(!el || !el.classList.contains("active")) return;
+  el.classList.remove("active");
+  const idx = modalStack.lastIndexOf(id);
+  if(idx !== -1) modalStack.splice(idx,1);
+  if(!skipHistoryBack){
+    history.back();
+  }
+}
+
+function closeTopModal(){
+  if(modalStack.length === 0) return;
+  const id = modalStack[modalStack.length-1];
+  closeModal(id, false);
+}
+
+window.addEventListener("popstate", function(){
+  if(modalStack.length > 0){
+    const id = modalStack.pop();
+    const el = document.getElementById(id);
+    if(el) el.classList.remove("active");
+  }
+});
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape"){
+    closeTopModal();
+  }
+});
+
+document.querySelectorAll("[data-close]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    closeModal(btn.getAttribute("data-close"), false);
+  });
+});
+
+document.querySelectorAll(".overlay").forEach(function(overlay){
+  overlay.addEventListener("click", function(e){
+    if(e.target === overlay){
+      closeModal(overlay.id, false);
+    }
+  });
+});
+
+/* =========================================================
+   4) مودالات عامة قابلة لإعادة الاستخدام
+   ========================================================= */
+function alertModal(title, message){
+  document.getElementById("alertTitle").textContent = title;
+  document.getElementById("alertMessage").textContent = message;
+  openModal("modal-alert");
+}
+
+function confirmModal(title, message, onConfirm){
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmMessage").textContent = message;
+  const btn = document.getElementById("confirmActionBtn");
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener("click", function(){
+    closeModal("modal-confirm", false);
+    onConfirm();
+  });
+  openModal("modal-confirm");
+}
+
+function promptModal(title, message, placeholder, isPassword, onSubmit){
+  document.getElementById("promptTitle").textContent = title;
+  document.getElementById("promptMessage").textContent = message;
+  const input = document.getElementById("promptInput");
+  input.value = "";
+  input.type = isPassword ? "password" : "text";
+  input.placeholder = placeholder || "";
+  const btn = document.getElementById("promptActionBtn");
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  function submit(){
+    const val = input.value.trim();
+    closeModal("modal-prompt", false);
+    onSubmit(val);
+  }
+  newBtn.addEventListener("click", submit);
+  input.onkeydown = function(e){
+    if(e.key === "Enter") submit();
+  };
+  openModal("modal-prompt");
+  setTimeout(()=> input.focus(), 150);
+}
+
+/* =========================================================
+   5) حماية كلمة المرور للعمليات الحساسة
+   ========================================================= */
+function requirePassword(actionLabel, callback){
+  if(!appData.settings.password){
+    callback();
+    return;
+  }
+  promptModal(
+    "كلمة المرور مطلوبة",
+    "الرجاء إدخال كلمة المرور لتنفيذ عملية: " + actionLabel,
+    "كلمة المرور",
+    true,
+    function(val){
+      if(val === appData.settings.password){
+        callback();
+      }else{
+        alertModal("خطأ", "كلمة المرور غير صحيحة.");
+      }
+    }
+  );
+}
+
+/* =========================================================
+   6) العرض (Rendering)
+   ========================================================= */
+function getFilteredContacts(){
+  let list = appData.contacts.slice();
+  const q = searchQuery.trim().toLowerCase();
+
+  if(q){
+    list = list.filter(function(c){
+      const addressMatch = c.address ? c.address.toLowerCase().includes(q) : false;
+      return c.name.toLowerCase().includes(q) || normalizePhone(c.phone).includes(normalizePhone(q)) || addressMatch;
+    });
+  }else if(currentCategory !== "الكل"){
+    list = list.filter(function(c){ return c.category === currentCategory; });
+  }
+  return list.sort(function(a,b){ return a.name.localeCompare(b.name, "ar"); });
+}
+
+function renderCategoryBar(){
+  const bar = document.getElementById("categoryBar");
+  let html = "";
+
+  const allCount = appData.contacts.length;
+  html += categoryChipHtml("الكل", allCount, currentCategory === "الكل");
+
+  appData.categories.forEach(function(cat){
+    const count = appData.contacts.filter(function(c){ return c.category === cat; }).length;
+    html += categoryChipHtml(cat, count, currentCategory === cat);
+  });
+
+  bar.innerHTML = html;
+
+  bar.querySelectorAll(".category-chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      currentCategory = chip.getAttribute("data-cat");
+      searchQuery = "";
+      document.getElementById("searchInput").value = "";
+      render();
+    });
+  });
+
+  const addChip = document.createElement("button");
+  addChip.className = "add-category-chip";
+  addChip.title = "إضافة خانة جديدة";
+  addChip.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  addChip.addEventListener("click", openAddCategoryModal);
+  bar.appendChild(addChip);
+}
+
+function categoryChipHtml(name, count, active){
+  return '<button class="category-chip' + (active ? " active" : "") + '" data-cat="' + escapeHtml(name) + '">' +
+    '<span>' + escapeHtml(name) + '</span><span class="count">' + count + '</span></button>';
+}
+
+function initialsOf(name){
+  const parts = name.trim().split(/\s+/);
+  if(parts.length === 1) return parts[0].slice(0,1);
+  return parts[0].slice(0,1) + parts[1].slice(0,1);
+}
+
+function renderContactsList(){
+  const container = document.getElementById("contactsList");
+  const list = getFilteredContacts();
+
+  document.getElementById("listTitle").textContent = searchQuery.trim() ? "نتائج البحث" : currentCategory;
+  document.getElementById("listCount").textContent = list.length + " جهة";
+  document.getElementById("subtitleCount").textContent = appData.contacts.length + " جهة اتصال محفوظة";
+
+  if(list.length === 0){
+    container.innerHTML =
+      '<div class="empty-state">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 21v-2a4 4 0 014-4h4a4 4 0 014 4v2M12 11a4 4 0 100-8 4 4 0 000 8zM19 8v4m2-2h-4" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+        '<h3>لا توجد جهات اتصال</h3>' +
+        '<p>ابدأ بإضافة جهة اتصال جديدة من الأعلى.</p>' +
+      '</div>';
+    return;
+  }
+
+  container.innerHTML = list.map(function(c){
+    return (
+      '<div class="contact-card" data-id="' + c.id + '">' +
+        '<div class="contact-avatar">' + escapeHtml(initialsOf(c.name)) + '</div>' +
+        '<div class="contact-info">' +
+          '<div class="name" title="عرض التفاصيل">' + escapeHtml(c.name) + '</div>' +
+          (c.address ? '<div class="address">' + escapeHtml(c.address) + '</div>' : '') +
+          '<div class="meta">' +
+            '<span class="phone">' + escapeHtml(c.phone) + '</span>' +
+            '<span class="badge-cat">' + escapeHtml(c.category) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="contact-actions">' +
+          '<button class="action-btn" data-action="edit" title="تعديل">' +
+            '<svg viewBox="0 0 24 24" fill="none"><path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>' +
+          '</button>' +
+          '<button class="action-btn" data-action="move" title="نقل إلى خانة أخرى">' +
+            '<svg viewBox="0 0 24 24" fill="none"><path d="M20 12H4m0 0l6-6m-6 6l6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</button>' +
+          '<button class="action-btn danger" data-action="delete" title="حذف">' +
+            '<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-8 0v12a2 2 0 002 2h4a2 2 0 002-2V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join("");
+
+  container.querySelectorAll(".action-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      const card = btn.closest(".contact-card");
+      const id = card.getAttribute("data-id");
+      const action = btn.getAttribute("data-action");
+      if(action === "edit") openEditContactModal(id);
+      if(action === "move") openMoveContactModal(id);
+      if(action === "delete") handleDeleteContact(id);
+    });
+  });
+
+  container.querySelectorAll(".name").forEach(function(nameEl){
+    nameEl.addEventListener("click", function(){
+      const card = nameEl.closest(".contact-card");
+      const id = card.getAttribute("data-id");
+      openContactDetailsModal(id);
+    });
+  });
+}
+
+function render(){
+  renderCategoryBar();
+  renderContactsList();
+}
+
+/* =========================================================
+   7) إضافة جهة اتصال
+   ========================================================= */
+function findDuplicate(name, phone, excludeId){
+  const nName = name.trim().toLowerCase();
+  const nPhone = normalizePhone(phone);
+  return appData.contacts.find(function(c){
+    if(excludeId && c.id === excludeId) return false;
+    return c.name.trim().toLowerCase() === nName || normalizePhone(c.phone) === nPhone;
+  });
+}
+
+document.getElementById("saveContactBtn").addEventListener("click", function(){
+  const nameInput = document.getElementById("nameInput");
+  const addressInput = document.getElementById("addressInput");
+  const phoneInput = document.getElementById("phoneInput");
+  const name = nameInput.value.trim();
+  const address = addressInput.value.trim();
+  const phone = phoneInput.value.trim();
+
+  if(!name || !phone){
+    alertModal("بيانات ناقصة", "الرجاء إدخال الاسم ورقم الهاتف قبل الحفظ.");
+    return;
+  }
+
+  const dup = findDuplicate(name, phone, null);
+  if(dup){
+    alertModal("تنبيه: بيانات مكررة", "هذا الاسم أو رقم الهاتف مسجل مسبقاً في جهة الاتصال «" + dup.name + "».");
+    return;
+  }
+
+  openCategorySelectModal(appData.categories[0], function(chosenCategory){
+    appData.contacts.push({
+      id: uid(),
+      name: name,
+      address: address,
+      phone: phone,
+      category: chosenCategory
+    });
+    saveData();
+    nameInput.value = "";
+    addressInput.value = "";
+    phoneInput.value = "";
+    currentCategory = chosenCategory;
+    render();
+    showToast("تم حفظ جهة الاتصال بنجاح");
+  }, "أي خانة تريد إضافة الاسم والرقم إليها؟");
+});
+
+[document.getElementById("nameInput"), document.getElementById("phoneInput")].forEach(function(input){
+  input.addEventListener("keydown", function(e){
+    if(e.key === "Enter") document.getElementById("saveContactBtn").click();
+  });
+});
+
+/* =========================================================
+   8) اختيار / إضافة خانة (تصنيف)
+   ========================================================= */
+function openCategorySelectModal(preselected, onConfirm, message){
+  document.getElementById("categorySelectTitle").textContent = message || "اختر الخانة";
+  const listEl = document.getElementById("categoryOptionList");
+  let selected = preselected;
+
+  function renderOptions(){
+    listEl.innerHTML = appData.categories.map(function(cat){
+      return '<div class="option-item' + (cat === selected ? " selected" : "") + '" data-cat="' + escapeHtml(cat) + '">' +
+        '<span class="dot"></span><span>' + escapeHtml(cat) + '</span></div>';
+    }).join("");
+    listEl.querySelectorAll(".option-item").forEach(function(item){
+      item.addEventListener("click", function(){
+        selected = item.getAttribute("data-cat");
+        renderOptions();
+      });
+    });
+  }
+  renderOptions();
+
+  const btn = document.getElementById("categorySelectConfirmBtn");
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener("click", function(){
+    closeModal("modal-category-select", false);
+    onConfirm(selected);
+  });
+
+  openModal("modal-category-select");
+}
+
+function openAddCategoryModal(){
+  promptModal(
+    "إضافة خانة جديدة",
+    "أدخل اسم الخانة (التصنيف) الجديدة:",
+    "مثال: العائلة، العمل...",
+    false,
+    function(name){
+      if(!name) return;
+      if(appData.categories.some(function(c){ return c.trim() === name.trim(); })){
+        alertModal("تنبيه", "توجد خانة بهذا الاسم بالفعل.");
+        return;
+      }
+      appData.categories.push(name);
+      saveData();
+      currentCategory = name;
+      render();
+      showToast("تمت إضافة الخانة بنجاح");
+    }
+  );
+}
+
+/* =========================================================
+   9) تعديل جهة اتصال
+   ========================================================= */
+function openContactDetailsModal(id){
+  const contact = appData.contacts.find(function(c){ return c.id === id; });
+  if(!contact) return;
+  document.getElementById("detailName").textContent = contact.name;
+  document.getElementById("detailAddress").textContent = contact.address || "لا يوجد عنوان";
+  document.getElementById("detailPhone").textContent = contact.phone;
+  document.getElementById("detailCategory").textContent = contact.category;
+  openModal("modal-contact-details");
+}
+
+let editingContactId = null;
+
+function openEditContactModal(id){
+  const contact = appData.contacts.find(function(c){ return c.id === id; });
+  if(!contact) return;
+  editingContactId = id;
+  document.getElementById("editNameInput").value = contact.name;
+  document.getElementById("editAddressInput").value = contact.address || "";
+  document.getElementById("editPhoneInput").value = contact.phone;
+  openModal("modal-edit-contact");
+}
+
+document.getElementById("editSaveBtn").addEventListener("click", function(){
+  const contact = appData.contacts.find(function(c){ return c.id === editingContactId; });
+  if(!contact) return;
+
+  const newName = document.getElementById("editNameInput").value.trim();
+  const newAddress = document.getElementById("editAddressInput").value.trim();
+  const newPhone = document.getElementById("editPhoneInput").value.trim();
+
+  if(!newName || !newPhone){
+    alertModal("بيانات ناقصة", "الرجاء إدخال الاسم ورقم الهاتف.");
+    return;
+  }
+
+  const dup = findDuplicate(newName, newPhone, contact.id);
+  if(dup){
+    alertModal("تنبيه: بيانات مكررة", "هذا الاسم أو رقم الهاتف مستخدم في جهة الاتصال «" + dup.name + "».");
+    return;
+  }
+
+  contact.name = newName;
+  contact.address = newAddress;
+  contact.phone = newPhone;
+  saveData();
+  closeModal("modal-edit-contact", false);
+  render();
+  showToast("تم تحديث جهة الاتصال");
+});
+
+/* =========================================================
+   10) نقل جهة اتصال إلى خانة أخرى
+   ========================================================= */
+function openMoveContactModal(id){
+  const contact = appData.contacts.find(function(c){ return c.id === id; });
+  if(!contact) return;
+  openCategorySelectModal(contact.category, function(newCat){
+    contact.category = newCat;
+    saveData();
+    render();
+    showToast("تم نقل جهة الاتصال إلى «" + newCat + "»");
+  }, "انقل «" + contact.name + "» إلى الخانة:");
+}
+
+/* =========================================================
+   11) حذف جهة اتصال
+   ========================================================= */
+function handleDeleteContact(id){
+  const contact = appData.contacts.find(function(c){ return c.id === id; });
+  if(!contact) return;
+  confirmModal(
+    "حذف جهة الاتصال",
+    "هل أنت متأكد من حذف «" + contact.name + "»؟ لا يمكن التراجع عن هذا الإجراء.",
+    function(){
+      appData.contacts = appData.contacts.filter(function(c){ return c.id !== id; });
+      saveData();
+      render();
+      showToast("تم حذف جهة الاتصال");
+    }
+  );
+}
+
+/* =========================================================
+   12) البحث
+   ========================================================= */
+document.getElementById("searchInput").addEventListener("input", function(e){
+  searchQuery = e.target.value;
+  renderContactsList();
+});
+
+/* =========================================================
+   13) الإعدادات: فتح القائمة
+   ========================================================= */
+document.getElementById("settingsBtn").addEventListener("click", function(){
+  updateSettingsLabels();
+  openModal("modal-settings");
+});
+
+function updateSettingsLabels(){
+  document.getElementById("toggleNeonLabel").textContent =
+    appData.settings.neon ? "إلغاء وضع النيون (العودة للأبيض البحري)" : "تفعيل وضع النيون";
+  document.getElementById("togglePasswordLabel").textContent =
+    appData.settings.password ? "إلغاء كلمة المرور" : "تعيين كلمة مرور";
+}
+
+/* ---------- 13.1 وضع النيون ---------- */
+function applyTheme(){
+  document.body.classList.toggle("neon", !!appData.settings.neon);
+}
+applyTheme();
+
+document.getElementById("toggleNeonBtn").addEventListener("click", function(){
+  appData.settings.neon = !appData.settings.neon;
+  saveData();
+  applyTheme();
+  updateSettingsLabels();
+  showToast(appData.settings.neon ? "تم تفعيل وضع النيون" : "تم تفعيل الوضع الأبيض البحري");
+});
+
+/* ---------- 13.2 تصدير البيانات ---------- */
+document.getElementById("exportBtn").addEventListener("click", function(){
+  requirePassword("تصدير البيانات", function(){
+    const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.getElementById("downloadAnchor");
+    a.href = url;
+    a.download = "phone-book-backup-" + new Date().toISOString().slice(0,10) + ".json";
+    a.click();
+    URL.revokeObjectURL(url);
+    closeModal("modal-settings", false);
+    showToast("تم تصدير البيانات بنجاح");
+  });
+});
+
+/* ---------- 13.3 استيراد البيانات ---------- */
+document.getElementById("importBtn").addEventListener("click", function(){
+  requirePassword("استيراد البيانات", function(){
+    closeModal("modal-settings", false);
+    document.getElementById("importFileInput").value = "";
+    document.getElementById("fileDropText").textContent = "اضغط هنا لاختيار ملف JSON للاستيراد";
+    openModal("modal-import");
+  });
+});
+
+document.getElementById("importFileInput").addEventListener("change", function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  document.getElementById("fileDropText").textContent = file.name;
+
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try{
+      const imported = JSON.parse(evt.target.result);
+      if(!imported || !Array.isArray(imported.contacts) || !Array.isArray(imported.categories)){
+        throw new Error("صيغة غير صالحة");
+      }
+      confirmModal(
+        "تأكيد الاستيراد",
+        "سيتم دمج " + imported.contacts.length + " جهة اتصال و " + imported.categories.length + " خانة مع بياناتك الحالية. هل تريد المتابعة؟",
+        function(){
+          mergeImportedData(imported);
+          closeModal("modal-import", false);
+          showToast("تم استيراد البيانات بنجاح");
+        }
+      );
+    }catch(err){
+      alertModal("خطأ في الملف", "تعذر قراءة الملف. تأكد من أنه ملف نسخة احتياطية صحيح بصيغة JSON.");
+    }
+  };
+  reader.readAsText(file);
+});
+
+function mergeImportedData(imported){
+  imported.categories.forEach(function(cat){
+    if(!appData.categories.includes(cat)) appData.categories.push(cat);
+  });
+  imported.contacts.forEach(function(c){
+    const dup = findDuplicate(c.name, c.phone, null);
+    if(!dup){
+      appData.contacts.push({
+        id: uid(),
+        name: c.name,
+        address: c.address || "",
+        phone: c.phone,
+        category: appData.categories.includes(c.category) ? c.category : appData.categories[0]
+      });
+    }
+  });
+  saveData();
+  render();
+}
+
+/* ---------- 13.4 كلمة المرور ---------- */
+document.getElementById("togglePasswordBtn").addEventListener("click", function(){
+  if(appData.settings.password){
+    promptModal(
+      "إلغاء كلمة المرور",
+      "أدخل كلمة المرور الحالية لإلغائها:",
+      "كلمة المرور",
+      true,
+      function(val){
+        if(val === appData.settings.password){
+          appData.settings.password = null;
+          saveData();
+          updateSettingsLabels();
+          showToast("تم إلغاء كلمة المرور");
+        }else{
+          alertModal("خطأ", "كلمة المرور غير صحيحة.");
+        }
+      }
+    );
+  }else{
+    promptModal(
+      "تعيين كلمة مرور",
+      "أدخل كلمة المرور الجديدة لحماية عمليات (الاستيراد، التصدير، الحذف الشامل):",
+      "كلمة المرور الجديدة",
+      true,
+      function(val){
+        if(!val){
+          alertModal("تنبيه", "لا يمكن ترك كلمة المرور فارغة.");
+          return;
+        }
+        promptModal(
+          "تأكيد كلمة المرور",
+          "أعد إدخال نفس كلمة المرور للتأكيد:",
+          "تأكيد كلمة المرور",
+          true,
+          function(val2){
+            if(val !== val2){
+              alertModal("خطأ", "كلمتا المرور غير متطابقتين. حاول مرة أخرى.");
+              return;
+            }
+            appData.settings.password = val;
+            saveData();
+            updateSettingsLabels();
+            showToast("تم تعيين كلمة المرور بنجاح");
+          }
+        );
+      }
+    );
+  }
+});
+
+/* ---------- 13.5 حذف جميع البيانات ---------- */
+document.getElementById("deleteAllBtn").addEventListener("click", function(){
+  requirePassword("حذف جميع البيانات", function(){
+    confirmModal(
+      "حذف جميع البيانات نهائياً",
+      "سيتم حذف جميع جهات الاتصال والخانات نهائياً ولا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟",
+      function(){
+        appData.contacts = [];
+        appData.categories = ["عام"];
+        currentCategory = "الكل";
+        saveData();
+        closeModal("modal-settings", false);
+        render();
+        showToast("تم حذف جميع البيانات");
+      }
+    );
+  });
+});
+
+/* =========================================================
+   14) التشغيل الأولي
+   ========================================================= */
+updateSettingsLabels();
+render();
+
+})();
+</script>
+</body>
+</html>

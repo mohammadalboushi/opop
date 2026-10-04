@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مختبر فلاتر نيون شات 🎙️</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-void: #020408;
+      --bg-surface: rgba(10, 22, 40, 0.8);
+      --neon-cyan: #00f0ff;
+      --neon-pink: #ff0090;
+      --neon-green: #00ff88;
+      --border-glow: rgba(0, 240, 255, 0.3);
+      --text-main: #e8f4ff;
+      --text-muted: #7aa3c8;
+    }
+
+    * { box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+    
+    body {
+      background: var(--bg-void); color: var(--text-main); margin: 0; padding: 20px;
+      background-image: radial-gradient(rgba(0, 240, 255, 0.05) 2px, transparent 2px);
+      background-size: 30px 30px;
+      padding-bottom: 100px;
+    }
+
+    h1 { text-align: center; color: var(--neon-cyan); text-shadow: 0 0 15px var(--neon-cyan); margin-bottom: 5px; font-weight: 900; }
+    .instructions { text-align: center; color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
+
+    .header-panel {
+      position: sticky; top: 10px; background: rgba(5, 11, 18, 0.95); backdrop-filter: blur(10px);
+      padding: 20px; border-radius: 20px; border: 1px solid var(--border-glow); z-index: 100;
+      display: flex; flex-direction: column; gap: 15px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--neon-cyan), #0080ff); color: #000; border: none;
+      padding: 14px 25px; font-size: 18px; font-weight: 900; border-radius: 12px; cursor: pointer;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); transition: transform 0.2s; width: 100%; max-width: 300px;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn.danger { background: linear-gradient(135deg, var(--neon-pink), #8a2be2); color: white; box-shadow: 0 0 15px rgba(255, 0, 144, 0.4); }
+
+    .category-title { font-size: 22px; color: var(--neon-green); margin: 30px 0 15px; border-bottom: 2px solid rgba(0,255,136,0.2); padding-bottom: 8px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+
+    .card {
+      background: var(--bg-surface); backdrop-filter: blur(10px); border: 1px solid rgba(0, 240, 255, 0.15);
+      border-radius: 16px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); transition: border-color 0.3s;
+    }
+    .card:hover { border-color: var(--neon-cyan); }
+
+    .code-tag {
+      display: inline-block; background: rgba(0, 255, 136, 0.1); color: var(--neon-green);
+      padding: 4px 10px; border-radius: 6px; font-family: monospace; font-size: 13px; font-weight: bold; margin-bottom: 12px; border: 1px solid rgba(0,255,136,0.3); direction: ltr;
+    }
+    
+    .card-title { font-size: 16px; font-weight: 700; margin-bottom: 5px; color: #fff; line-height: 1.4; }
+    .card-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5; }
+    .current-val-note { font-size: 12px; color: var(--neon-pink); font-weight: bold; margin-bottom: 10px; }
+
+    .slider-row { display: flex; align-items: center; gap: 15px; }
+    input[type=range] { flex: 1; accent-color: var(--neon-cyan); cursor: pointer; }
+    .val-badge {
+      background: rgba(0,0,0,0.6); border: 1px solid var(--neon-cyan); color: var(--neon-cyan);
+      padding: 5px 12px; border-radius: 8px; font-family: monospace; font-weight: bold; font-size: 16px; min-width: 60px; text-align: center;
+    }
+
+    #recordings-area { margin-top: 20px; display: flex; flex-direction: column; gap: 15px; width: 100%; }
+    .rec-item { background: rgba(0, 240, 255, 0.05); padding: 15px; border-radius: 12px; border: 1px solid var(--border-glow); width: 100%; text-align: center;}
+    audio { width: 100%; margin-top: 10px; outline: none; border-radius: 30px; }
+    audio::-webkit-media-controls-panel { background: rgba(0, 240, 255, 0.8); }
+  </style>
+</head>
+<body>
+
+  <h1>مختبر صوتيات نيون شات 🎛️</h1>
+  <div class="instructions">سجل مقطع صغير، ولما يخلص رح يتكرر تلقائياً لتلعب بالقيم وتسمع الفرق على رواق.</div>
+
+  <div class="header-panel">
+    <button class="btn" id="btn-rec" onclick="toggleRecord()">بدء التسجيل 🔴</button>
+    <div id="status-text" style="color: var(--text-muted); font-weight: bold; font-size: 16px; text-align: center;">اضغط للبدء</div>
+    
+    <!-- منطقة تشغيل الصوت بتظهر هون مشان تضل ثابتة قدام عينك -->
+    <div id="recordings-area"></div>
+  </div>
+
+  <div class="category-title">1. قوة المايك وتصفية الضجيج</div>
+  <div class="grid">
+    <div class="card">
+      <div class="code-tag">preGain.gain.value</div>
+      <div class="card-title">قوة سحب المايك (التضخيم)</div>
+      <div class="card-desc">بيرفع صوتك لو المايك ضعيف، بس إذا رفعته كتير بيصير يلقط ضجة الغرفة.</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 1.5</div>
+      <div class="slider-row">
+        <input type="range" id="preGain" min="0.5" max="5" step="0.1" value="1.5" oninput="updateF('preGain', this.value)">
+        <span class="val-badge" id="val-preGain">1.5</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-tag">lowCutFilter.frequency.value</div>
+      <div class="card-title">حذف النفخة والهواء (Low Cut)</div>
+      <div class="card-desc">بيحذف الترددات الواطية المزعجة متل خبطة المايك أو الهوا وقت تحكي حرف الباء.</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 160</div>
+      <div class="slider-row">
+        <input type="range" id="lowCut" min="0" max="400" step="10" value="160" oninput="updateF('lowCut', this.value)">
+        <span class="val-badge" id="val-lowCut">160</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-tag">highCutFilter.frequency.value</div>
+      <div class="card-title">حذف الصرصرة والوشوشة (High Cut)</div>
+      <div class="card-desc">بيقص الترددات العالية جداً اللي بتعمل وجع راس أو وشوشة ناعمة بالخلفية.</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 10000</div>
+      <div class="slider-row">
+        <input type="range" id="highCut" min="3000" max="15000" step="100" value="10000" oninput="updateF('highCut', this.value)">
+        <span class="val-badge" id="val-highCut">10000</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-title">2. تلميع الصوت (Equalizer)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="code-tag">presenceEQ.frequency.value</div>
+      <div class="card-title">مكان التلميع (التردد)</div>
+      <div class="card-desc">أي طبقة من صوتك بدك تبرزها؟ 3500 بيعطي وضوح وحضور حلو للصوت البشري.</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 3500</div>
+      <div class="slider-row">
+        <input type="range" id="eqFreq" min="1000" max="6000" step="100" value="3500" oninput="updateF('eqFreq', this.value)">
+        <span class="val-badge" id="val-eqFreq">3500</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-tag">presenceEQ.gain.value</div>
+      <div class="card-title">قوة التلميع</div>
+      <div class="card-desc">قديش بدك ترفع الطبقة اللي اخترناها فوق لحتى يصير الصوت بيلمع.</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 4</div>
+      <div class="slider-row">
+        <input type="range" id="eqGain" min="0" max="15" step="1" value="4" oninput="updateF('eqGain', this.value)">
+        <span class="val-badge" id="val-eqGain">4</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-title">3. ضغط الصوت وتوحيده (Compressor)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="code-tag">compressor.threshold.value</div>
+      <div class="card-title">عتبة الضغط</div>
+      <div class="card-desc">إيمتى بيبدأ يكبس الصوت؟ (-15) يعني أي صوت عالي شوي رح يترتب وينضغط ليتوحد مع الصوت الواطي.</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: -15</div>
+      <div class="slider-row">
+        <input type="range" id="compThresh" min="-40" max="0" step="1" value="-15" oninput="updateF('compThresh', this.value)">
+        <span class="val-badge" id="val-compThresh">-15</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-tag">compressor.ratio.value</div>
+      <div class="card-title">نسبة الكبس</div>
+      <div class="card-desc">قديش القوة اللي بيكبس فيها الصرخات أو الأصوات العالية فجأة ليحمي السامع.</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 3</div>
+      <div class="slider-row">
+        <input type="range" id="compRatio" min="1" max="10" step="0.5" value="3" oninput="updateF('compRatio', this.value)">
+        <span class="val-badge" id="val-compRatio">3</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-title">4. مفاتيح الصدى والمكس (Reverb & Mix)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="code-tag">length (ctx.sampleRate * X)</div>
+      <div class="card-title">طول وحجم الغرفة (الصدى)</div>
+      <div class="card-desc">قديش حجم القاعة أو الغرفة اللي عم تحكي فيها (بالثواني).</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 3.5</div>
+      <div class="slider-row">
+        <input type="range" id="revLength" min="0.5" max="6" step="0.5" value="3.5" oninput="updateReverb()">
+        <span class="val-badge" id="val-revLength">3.5</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-tag">dryGain.gain.value</div>
+      <div class="card-title">مستوى الصوت الأصلي (الناشف)</div>
+      <div class="card-desc">صوتك الحقيقي الصافي بدون صدى قديش بدك يطغى على المكس؟</div>
+      <div class="current-val-note">الرقم المعتمد بموقعك حالياً: 0.6</div>
+      <div class="slider-row">
+        <input type="range" id="dryGain" min="0" max="2" step="0.1" value="0.6" oninput="updateF('dryGain', this.value)">
+        <span class="val-badge" id="val-dryGain">0.6</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="code-tag">wetGain.gain.value</div>
+      <div class="card-title">مستوى الصدى (المبلل)</div>
+      <div class="card-desc">كمية الصدى اللي رح تنخلط مع صوتك الأصلي. هاد أهم زر بالصفحة!</div>
+      <div class="current-val-note">العادي: 0.09 | الغناء: 0.3</div>
+      <div class="slider-row">
+        <input type="range" id="wetGain" min="0" max="1" step="0.01" value="0.09" oninput="updateF('wetGain', this.value)">
+        <span class="val-badge" id="val-wetGain">0.09</span>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:15px;">
+        <button class="btn" style="padding:8px; font-size:13px; max-width:100%;" onclick="document.getElementById('wetGain').value=0.09; updateF('wetGain', 0.09);">زر الفويس العادي (0.09)</button>
+        <button class="btn danger" style="padding:8px; font-size:13px; max-width:100%;" onclick="document.getElementById('wetGain').value=0.3; updateF('wetGain', 0.3);">زر الغناء (0.3)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let audioCtx, preGain, lowCutFilter, highCutFilter, presenceEQ, compressor, convolver, dryGain, wetGain;
+    let mediaRecorder, micStream;
+    let audioChunks = [];
+    let isRecording = false;
+    let currentSourceNode = null; // للاحتفاظ بالمرجع لمسحه لما نسجل مرة تانية
+
+    function initFilters() {
+      if (audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      
+      preGain = audioCtx.createGain();
+      lowCutFilter = audioCtx.createBiquadFilter(); lowCutFilter.type = "highpass";
+      highCutFilter = audioCtx.createBiquadFilter(); highCutFilter.type = "lowpass";
+      presenceEQ = audioCtx.createBiquadFilter(); presenceEQ.type = "peaking"; presenceEQ.Q.value = 1; 
+      compressor = audioCtx.createDynamicsCompressor(); compressor.attack.value = 0.005; compressor.release.value = 0.25; 
+      convolver = audioCtx.createConvolver();
+      dryGain = audioCtx.createGain();
+      wetGain = audioCtx.createGain();
+
+      applyAllValues();
+      generateReverbBuffer();
+
+      // ربط السلسلة
+      preGain.connect(lowCutFilter);
+      lowCutFilter.connect(highCutFilter);
+      highCutFilter.connect(presenceEQ);
+      presenceEQ.connect(compressor);
+      
+      compressor.connect(dryGain);
+      compressor.connect(convolver);
+      convolver.connect(wetGain);
+
+      // إخراج الصوت المفلتر للسماعات فقط
+      dryGain.connect(audioCtx.destination);
+      wetGain.connect(audioCtx.destination);
+    }
+
+    function applyAllValues() {
+      if(!audioCtx) return;
+      preGain.gain.value = parseFloat(document.getElementById('preGain').value);
+      lowCutFilter.frequency.value = parseFloat(document.getElementById('lowCut').value);
+      highCutFilter.frequency.value = parseFloat(document.getElementById('highCut').value);
+      presenceEQ.frequency.value = parseFloat(document.getElementById('eqFreq').value);
+      presenceEQ.gain.value = parseFloat(document.getElementById('eqGain').value);
+      compressor.threshold.value = parseFloat(document.getElementById('compThresh').value);
+      compressor.ratio.value = parseFloat(document.getElementById('compRatio').value);
+      dryGain.gain.value = parseFloat(document.getElementById('dryGain').value);
+      wetGain.gain.value = parseFloat(document.getElementById('wetGain').value);
+    }
+
+    function updateF(id, value) {
+      document.getElementById('val-' + id).textContent = value;
+      if (!audioCtx) return; 
+      
+      let v = parseFloat(value);
+      if (id === 'preGain') preGain.gain.value = v;
+      if (id === 'lowCut') lowCutFilter.frequency.value = v;
+      if (id === 'highCut') highCutFilter.frequency.value = v;
+      if (id === 'eqFreq') presenceEQ.frequency.value = v;
+      if (id === 'eqGain') presenceEQ.gain.value = v;
+      if (id === 'compThresh') compressor.threshold.value = v;
+      if (id === 'compRatio') compressor.ratio.value = v;
+      if (id === 'dryGain') dryGain.gain.value = v;
+      if (id === 'wetGain') wetGain.gain.value = v;
+    }
+
+    function generateReverbBuffer() {
+      if (!audioCtx) return;
+      let lenVal = parseFloat(document.getElementById('revLength').value);
+      const length = audioCtx.sampleRate * lenVal;
+      const impulse = audioCtx.createBuffer(2, length, audioCtx.sampleRate);
+      const left = impulse.getChannelData(0);
+      const right = impulse.getChannelData(1);
+      for (let i = 0; i < length; i++) {
+        const decay = Math.pow(1 - i / length, 1.5); // قيمة التلاشي 1.5 ثابتة بموقعك
+        left[i] = (Math.random() * 2 - 1) * decay;
+        right[i] = (Math.random() * 2 - 1) * decay;
+      }
+      convolver.buffer = impulse;
+    }
+
+    function updateReverb() {
+      document.getElementById('val-revLength').textContent = document.getElementById('revLength').value;
+      generateReverbBuffer();
+    }
+
+    async function toggleRecord() {
+      if (isRecording) {
+        // إيقاف التسجيل
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        // إغلاق المايك نهائياً عشان ما يسحب بطارية
+        if (micStream) {
+          micStream.getTracks().forEach(t => t.stop());
+          micStream = null;
+        }
+
+        document.getElementById('btn-rec').textContent = 'بدء تسجيل جديد 🔴';
+        document.getElementById('btn-rec').classList.remove('danger');
+        document.getElementById('status-text').textContent = 'اسمع التسجيل تحت وعدّل الفلاتر 🎛️';
+        document.getElementById('status-text').style.color = 'var(--neon-cyan)';
+      } else {
+        // بدء التسجيل الصافي (الخام) بدون إخراجه للسماعات لمنع التصفير
+        try {
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, sampleRate: 48000, channelCount: 2 } });
+          audioChunks = [];
+          
+          mediaRecorder = new MediaRecorder(micStream);
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            
+            // تهيئة الفلاتر إذا ما كانت مهيئة
+            initFilters();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // فصل أي تسجيل قديم إذا كان عم يشتغل
+            if (currentSourceNode) {
+              currentSourceNode.disconnect();
+            }
+
+            const div = document.createElement('div');
+            div.className = 'rec-item';
+            
+            const audioEl = document.createElement('audio');
+            audioEl.controls = true;
+            audioEl.loop = true; // 🚀 الإعادة التلقائية
+            audioEl.src = url;
+
+            // 🚀 ربط الصوت المسجل بالفلاتر
+            currentSourceNode = audioCtx.createMediaElementSource(audioEl);
+            currentSourceNode.connect(preGain);
+
+            div.innerHTML = `<div class="card-title" style="color:var(--neon-cyan); margin-bottom:10px;">🎧 مقطع قيد التكرار (غيّر القيم واسمع النتيجة):</div>`;
+            div.appendChild(audioEl);
+            
+            // بنمسح القديم وبنحط الجديد ليكون مرتب
+            document.getElementById('recordings-area').innerHTML = '';
+            document.getElementById('recordings-area').appendChild(div);
+            
+            audioEl.play().catch(e => console.log('Auto-play prevented'));
+          };
+          
+          mediaRecorder.start();
+          isRecording = true;
+          document.getElementById('btn-rec').textContent = 'إيقاف التسجيل ⏹';
+          document.getElementById('btn-rec').classList.add('danger');
+          document.getElementById('status-text').textContent = '🔴 جاري تسجيل صوتك الخام...';
+          document.getElementById('status-text').style.color = 'var(--neon-pink)';
+          document.getElementById('recordings-area').innerHTML = ''; // إخفاء المشغل وقت التسجيل
+        } catch (e) {
+          alert("تأكد من إعطاء صلاحية المايك للمتصفح!");
+        }
+      }
+    }
+  </script>
+</body>
+</html>
